@@ -209,7 +209,7 @@ function displayTripsTable(trips) {
 
     // Create table header (Change 'Total' to 'KM')
     const headerRow = document.createElement('tr');
-    const headers = ['Date', 'User', 'Vehicle', 'KM', 'Customer', 'Purpose', 'Actions']; // Changed 'Total' to 'KM'
+    const headers = ['Date', 'User', 'Car', 'KM', 'Customer', 'Purpose', 'Actions']; // Changed 'Vehicle' to 'Car'
     headers.forEach(headerText => {
         const th = document.createElement('th');
         th.textContent = headerText;

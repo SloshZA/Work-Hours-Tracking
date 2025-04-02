@@ -307,4 +307,80 @@ function setupEventListeners() {
         importFromCSV(event.target.files[0], 'vehicles', ['name', 'currentKm'], processVehicleData);
          event.target.value = null; // Reset file input
     });
+
+    // Clear Database Button
+    document.getElementById('clearDatabaseBtn')?.addEventListener('click', clearEntireDatabase);
+}
+
+// --- Database Clearing Function ---
+function clearEntireDatabase() {
+    if (!db) {
+        displayStatusMessage('Database not available.', 'error');
+        return;
+    }
+
+    // Confirmation dialog
+    if (!confirm('WARNING: This will permanently delete ALL data (Trips, Customers, Vehicles) from the database. This action cannot be undone. Are you absolutely sure?')) {
+        displayStatusMessage('Database clearing cancelled.', 'info');
+        return;
+    }
+
+    // Double confirmation for safety
+    if (!confirm('SECOND WARNING: Please confirm again that you want to erase all data.')) {
+        displayStatusMessage('Database clearing cancelled.', 'info');
+        return;
+    }
+
+    displayStatusMessage('Attempting to clear database...', 'info');
+
+    try {
+        const storeNames = Array.from(db.objectStoreNames);
+        if (storeNames.length === 0) {
+            displayStatusMessage('No data stores found in the database.', 'info');
+            return;
+        }
+
+        const transaction = db.transaction(storeNames, 'readwrite');
+        let storesCleared = 0;
+        let errorsOccurred = false;
+
+        storeNames.forEach(storeName => {
+            const request = transaction.objectStore(storeName).clear();
+            request.onsuccess = () => {
+                console.log(`Store '${storeName}' cleared successfully.`);
+                storesCleared++;
+            };
+            request.onerror = (event) => {
+                console.error(`Error clearing store '${storeName}':`, event.target.error);
+                errorsOccurred = true;
+                // Don't abort the whole transaction, try to clear other stores
+            };
+        });
+
+        transaction.oncomplete = () => {
+            if (errorsOccurred) {
+                displayStatusMessage(`Database clearing finished with some errors. ${storesCleared}/${storeNames.length} stores cleared. Check console for details. LocalStorage NOT cleared due to errors.`, 'error');
+            } else {
+                // Clear localStorage only if IndexedDB clearing was fully successful
+                try {
+                    localStorage.clear();
+                    console.log('LocalStorage cleared successfully.');
+                    displayStatusMessage(`Successfully cleared all data from ${storesCleared} IndexedDB stores and LocalStorage.`, 'success');
+                } catch (storageError) {
+                    console.error('Error clearing LocalStorage:', storageError);
+                    displayStatusMessage(`Successfully cleared IndexedDB stores, but failed to clear LocalStorage: ${storageError.message}`, 'error');
+                }
+                // Optionally, reload the page or update UI elements if needed elsewhere
+            }
+        };
+
+        transaction.onerror = (event) => {
+            console.error('Transaction error during database clearing:', event.target.error);
+            displayStatusMessage(`Failed to clear database due to a transaction error: ${event.target.error}`, 'error');
+        };
+
+    } catch (error) {
+        console.error('Error initiating database clearing:', error);
+        displayStatusMessage(`An unexpected error occurred while trying to clear the database: ${error.message}`, 'error');
+    }
 } 
