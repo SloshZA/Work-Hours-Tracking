@@ -286,15 +286,16 @@ body > .container {
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
+    background-color: #2c2c2c;
+    color: #ffffff;
+    margin: 15% auto;
     padding: 25px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
-    max-width: 500px; /* Maximum width */
+    border: 1px solid #555;
+    width: 80%;
+    max-width: 500px;
     border-radius: 8px;
     position: relative;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .close-btn {
@@ -308,7 +309,7 @@ body > .container {
 
 .close-btn:hover,
 .close-btn:focus {
-    color: black;
+    color: #ffffff;
     text-decoration: none;
     cursor: pointer;
 }
@@ -775,4 +776,130 @@ input:focus, select:focus, textarea:focus {
 .status-error {
     background-color: #e76f51;
     color: white;
+}
+
+/* Instead, ensure headings and labels use appropriate theme colors */
+.modal-content h2 {
+    color: #00ff88;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-content label {
+    color: #ccc;
+    display: block;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+/* Ensure specific elements like the vehicle display are also light */
+#modalVehicleDisplay {
+    color: #ffffff;
+    font-weight: bold;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+/* Ensure paragraph text in modals is readable */
+.modal-content p {
+    color: #e0e0e0;
+    line-height: 1.5;
+}
+
+/* Ensure input/select text is readable (already set globally, but good to double-check) */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border: 1px solid #555;
+}
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    border-color: #00ff88;
+    background-color: #444;
+}
+
+/* Styles for Contact Pairs in Customer Modal */
+#customerModal .contact-pair {
+    display: flex;          /* Arrange items horizontally */
+    align-items: center;    /* Vertically align items in the middle */
+    margin-bottom: 15px;    /* Increased slightly for better spacing between pairs */
+}
+
+#customerModal .contact-pair .contactPerson {
+    flex: 1;                /* Allow input to grow */
+    margin: 0;              /* Remove default margins */
+    width: auto;            /* Override default width */
+    margin-right: 15px;     /* Add space AFTER the person input */
+}
+
+#customerModal .contact-pair .contactNumber {
+    flex: 1;                /* Allow input to grow */
+    margin: 0;              /* Remove default margins */
+    width: auto;            /* Override default width */
+    margin-right: 10px;     /* Add space AFTER the number input (before button) */
+}
+
+#customerModal .contact-pair .btn-remove-contact {
+    flex-shrink: 0;         /* Prevent button from shrinking */
+    width: auto;            /* Allow button to size based on content */
+    padding: 5px 8px;       /* Smaller padding for the 'X' button */
+    font-size: 12px;        /* Smaller font size */
+    line-height: 1;         /* Adjust line height */
+    background-color: #dc3545; /* Red background */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0;              /* Remove default margins */
+}
+
+#customerModal .contact-pair .btn-remove-contact:hover {
+    background-color: #c82333;
+}
+
+/* Style the Add Contact button */
+#addContactBtn {
+    display: inline-block; /* Allow it to sit nicely */
+    width: auto;           /* Size based on content */
+    padding: 8px 15px;
+    margin-top: 5px;       /* Reduced margin-top slightly as container now has margin */
+    background-color: #00cc66;
+    color: #111;
+    font-size: 14px;
+}
+#addContactBtn:hover {
+    background-color: #00aa55;
+    color: #000;
+}
+
+/* Add spacing below Customer Name and Address inputs in the modal */
+#customerModal #customerName,
+#customerModal #customerAddress {
+    margin-bottom: 20px;
+}
+
+/* Add spacing above the container holding the contact pairs */
+#customerModal #contactsContainer {
+    margin-top: 20px;
+}
+
+/* Add spacing below Vehicle Name, License Plate, and KM inputs in the modal */
+#vehicleModal #vehicleName,
+#vehicleModal #licensePlate,
+#vehicleModal #currentKm {
+    margin-bottom: 20px; /* Adjust this value as needed */
+}
+
+/* Ensure the last input doesn't have extra margin pushing the button too far */
+#vehicleModal #currentKm {
+    margin-bottom: 10px; /* Reduce margin for the last input before the button */
+}
+
+/* Optional: Add some top margin to the save button if needed */
+#vehicleModal #saveVehicleBtn {
+    margin-top: 20px;
 }

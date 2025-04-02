@@ -61,6 +61,9 @@ request.onsuccess = (event) => {
     db = event.target.result;
     console.log('Database opened successfully');
     
+    // Add default vehicle if it doesn't exist
+    addDefaultVehicleIfNeeded(); // Call the new function
+    
     // Check for an active trip in localStorage on load
     const storedTrip = localStorage.getItem('activeTripData');
     if (storedTrip) {
@@ -630,4 +633,50 @@ function setupEventListeners() {
     // Add listener for import button if it exists and is needed
     // const importTripBtn = document.getElementById('importTripBtn');
     // if (importTripBtn) { ... }
+}
+
+// --- Function to add default vehicle ---
+function addDefaultVehicleIfNeeded() {
+    if (!db) {
+        console.error('DB not available to add default vehicle.');
+        return;
+    }
+
+    const transaction = db.transaction(['vehicles'], 'readwrite');
+    const store = transaction.objectStore('vehicles');
+    const index = store.index('name'); // Use the name index
+    const getRequest = index.get('Test'); // Check if 'Test' vehicle exists
+
+    getRequest.onsuccess = () => {
+        if (!getRequest.result) {
+            // 'Test' vehicle doesn't exist, so add it
+            console.log('Default vehicle "Test" not found. Adding it.');
+            const defaultVehicle = {
+                name: 'Test',
+                currentKm: 500
+                // licensePlate: '5555' // Add this later if schema is updated
+            };
+            const addRequest = store.add(defaultVehicle);
+
+            addRequest.onsuccess = () => {
+                console.log('Default vehicle "Test" added successfully.');
+                // Re-populate dropdown if needed, though it happens later anyway
+                // populateVehicleDropdown();
+            };
+            addRequest.onerror = (event) => {
+                console.error('Error adding default vehicle "Test":', event.target.error);
+            };
+        } else {
+            // 'Test' vehicle already exists
+            console.log('Default vehicle "Test" already exists.');
+        }
+    };
+
+    getRequest.onerror = (event) => {
+        console.error('Error checking for default vehicle "Test":', event.target.error);
+    };
+
+    transaction.onerror = (event) => {
+        console.error('Transaction error while checking/adding default vehicle:', event.target.error);
+    };
 }
