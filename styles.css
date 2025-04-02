@@ -20,10 +20,10 @@ body {
     text-align: center;
 }
 
-h1 {
+h1 { /* trip sheet */
     color: #00ff88;
-    margin-bottom: 20px;
-    font-size: 24px;
+    margin-bottom: 15px;
+    font-size: 18px;
     font-weight: 500;
 }
 
@@ -108,26 +108,27 @@ hr {
 }
 
 .table-container {
-    margin-top: 20px;
+    margin-top: 15px;
     width: 100%;
-    overflow-x: auto; /* Add horizontal scroll for small screens */
+    overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
+    margin-top: 10px;
     background-color: #2c2c2c;
     border-radius: 8px;
-    overflow: hidden; /* Ensures border-radius clips content */
+    overflow: hidden;
 }
 
 th, td {
-    padding: 12px 15px;
+    padding: 6px 8px;
     text-align: left;
     border-bottom: 1px solid #444;
     color: #ffffff;
-    font-size: 14px;
+    font-size: 10px;
+    white-space: nowrap;
 }
 
 th {
@@ -136,14 +137,15 @@ th {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-size: 11px;
 }
 
 tr:last-child td {
-    border-bottom: none; /* Remove border from last row */
+    border-bottom: none;
 }
 
 tr:hover {
-    background-color: #383838; /* Subtle hover effect */
+    background-color: #383838;
 }
 
 .no-trips-message {
@@ -153,16 +155,20 @@ tr:hover {
 }
 
 .back-btn {
-    background-color: #444; /* Different color for back button */
+    background-color: #444;
     color: #ffffff;
-    margin-bottom: 20px; /* Add space below the back button */
-    display: inline-block; /* Allow setting width */
-    width: auto; /* Don't force full width */
-    padding: 10px 20px;
+    margin-bottom: 15px;
+    display: inline-block;
+    width: auto;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .back-btn:hover {
     background-color: #555;
+    transform: translateY(-1px);
 }
 
 .loading-message, .no-trips-message {
@@ -172,12 +178,6 @@ tr:hover {
     text-align: center;
 }
 
-/* Adjust container max-width for trip sheet if needed */
-/* Example: Allow wider table on trip sheet */
-body > .container { /* Target only the direct child container of body */
-    max-width: 800px; /* Increase max-width for the trip sheet page */
+body > .container {
+    max-width: 800px;
 }
-
-/* Keep the main page container narrow */
-/* We might need a more specific selector if structure changes */
-/* For now, this targets all containers */

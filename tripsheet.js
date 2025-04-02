@@ -88,7 +88,7 @@ function displayTripsTable(trips) {
 
     // Create table header
     const headerRow = document.createElement('tr');
-    const headers = ['Date', 'Start KM', 'End KM', 'Total KM', 'Customer', 'Purpose'];
+    const headers = ['Date', 'Start', 'End', 'Total', 'Customer', 'Purpose'];
     headers.forEach(headerText => {
         const th = document.createElement('th');
         th.textContent = headerText;
