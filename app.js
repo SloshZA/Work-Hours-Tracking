@@ -209,25 +209,8 @@ function initializeUI() {
     });
 
     manageCustomersBtn.addEventListener('click', () => {
-        const customerName = prompt('Enter Customer Name:');
-        const contact = prompt('Enter Contact Info (optional):');
-
-        if (customerName) {
-            const customer = {
-                name: customerName.trim(),
-                contact: contact ? contact.trim() : ''
-            };
-            saveCustomer(customer, (success) => {
-                if (success) {
-                    alert('Customer saved successfully!');
-                    getCustomers(populateCustomerDropdown);
-                } else {
-                    alert('Failed to save customer.');
-                }
-            });
-        } else {
-            alert('Customer name is required.');
-        }
+        // Navigate to the new customers page
+        window.location.href = 'customers.html';
     });
 
     importTripBtn.addEventListener('click', () => {

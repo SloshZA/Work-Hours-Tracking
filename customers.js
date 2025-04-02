@@ -1,0 +1,446 @@
+let db;
+let allCustomers = [];
+let allTrips = []; // Needed for last visited date
+
+// --- IndexedDB Setup ---
+const request = indexedDB.open('TripTrackerDB', 1);
+
+request.onupgradeneeded = (event) => {
+    console.log('Customers: DB upgrade needed.');
+    const dbInstance = event.target.result;
+    // Ensure object stores exist (should match other scripts)
+    if (!dbInstance.objectStoreNames.contains('trips')) {
+        dbInstance.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
+    }
+    if (!dbInstance.objectStoreNames.contains('customers')) {
+        // Add indexes if needed for searching later
+        const customerStore = dbInstance.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
+        customerStore.createIndex('name', 'name', { unique: false });
+    }
+};
+
+request.onsuccess = (event) => {
+    db = event.target.result;
+    console.log('Customers: Database opened successfully.');
+    loadInitialData();
+    setupEventListeners(); // Setup button listeners etc.
+};
+
+request.onerror = (event) => {
+    console.error('Customers: Error opening database:', event.target.error);
+    displayErrorMessage('Could not load customer data. Database error.');
+};
+
+// --- Data Fetching ---
+function getCustomers(callback) {
+    if (!db) return callback([]);
+    try {
+        const transaction = db.transaction(['customers'], 'readonly');
+        const store = transaction.objectStore('customers');
+        const request = store.getAll();
+        request.onsuccess = () => callback(request.result);
+        request.onerror = (event) => {
+            console.error('Customers: Error getting customers:', event.target.error);
+            callback([]);
+        };
+    } catch (error) {
+        console.error('Customers: Error creating getCustomers transaction:', error);
+        callback([]);
+    }
+}
+
+function getTrips(callback) {
+    if (!db) return callback([]);
+    try {
+        const transaction = db.transaction(['trips'], 'readonly');
+        const store = transaction.objectStore('trips');
+        const request = store.getAll();
+        request.onsuccess = () => callback(request.result);
+        request.onerror = (event) => {
+            console.error('Customers: Error getting trips:', event.target.error);
+            callback([]);
+        };
+    } catch (error) {
+        console.error('Customers: Error creating getTrips transaction:', error);
+        callback([]);
+    }
+}
+
+function saveCustomer(customer, callback) {
+    if (!db) return callback(false);
+    try {
+        const transaction = db.transaction(['customers'], 'readwrite');
+        const store = transaction.objectStore('customers');
+        const request = store.add(customer);
+        transaction.oncomplete = () => callback(true);
+        transaction.onerror = (event) => {
+            console.error('Customers: Error saving customer transaction:', event.target.error);
+            callback(false);
+        };
+        request.onerror = (event) => {
+             console.error('Customers: Error saving customer request:', event.target.error);
+             // Transaction error will likely catch this anyway
+        };
+    } catch (error) {
+        console.error('Customers: Error creating saveCustomer transaction:', error);
+        callback(false);
+    }
+}
+
+function updateCustomer(customer, callback) {
+    if (!db || !customer.id) return callback(false);
+    try {
+        const transaction = db.transaction(['customers'], 'readwrite');
+        const store = transaction.objectStore('customers');
+        const request = store.put(customer);
+        transaction.oncomplete = () => callback(true);
+        transaction.onerror = (event) => {
+            console.error('Customers: Error updating customer transaction:', event.target.error);
+            callback(false);
+        };
+        request.onerror = (event) => {
+             console.error('Customers: Error updating customer request:', event.target.error);
+        };
+    } catch (error) {
+        console.error('Customers: Error creating updateCustomer transaction:', error);
+        callback(false);
+    }
+}
+
+function deleteCustomer(customerId, callback) {
+    if (!db) return callback(false);
+    try {
+        const transaction = db.transaction(['customers'], 'readwrite');
+        const store = transaction.objectStore('customers');
+        const request = store.delete(customerId); // Use the customer ID as the key
+
+        transaction.oncomplete = () => {
+            console.log(`Customer with ID ${customerId} deleted.`);
+            callback(true);
+        };
+        transaction.onerror = (event) => {
+            console.error('Customers: Error deleting customer transaction:', event.target.error);
+            callback(false);
+        };
+        request.onerror = (event) => {
+             console.error('Customers: Error deleting customer request:', event.target.error);
+             // Transaction error will likely catch this anyway
+        };
+    } catch (error) {
+        console.error('Customers: Error creating deleteCustomer transaction:', error);
+        callback(false);
+    }
+}
+
+// --- Helper Functions ---
+function calculateLastVisited(customerName, trips) {
+    const customerTrips = trips
+        .filter(trip => trip.customer === customerName && trip.date)
+        .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort descending by date
+
+    return customerTrips.length > 0 ? new Date(customerTrips[0].date).toLocaleDateString() : 'N/A';
+}
+
+function createContactPairElement(person = '', number = '', canRemove = true) {
+    const div = document.createElement('div');
+    div.classList.add('contact-pair');
+
+    const personInput = document.createElement('input');
+    personInput.type = 'text';
+    personInput.classList.add('contactPerson');
+    personInput.placeholder = 'Contact Person';
+    personInput.value = person;
+
+    const numberInput = document.createElement('input');
+    numberInput.type = 'text'; // Use text for flexibility (e.g., extensions)
+    numberInput.classList.add('contactNumber');
+    numberInput.placeholder = 'Contact Number';
+    numberInput.value = number;
+
+    div.appendChild(personInput);
+    div.appendChild(numberInput);
+
+    if (canRemove) {
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'X';
+        removeBtn.classList.add('btn-remove-contact');
+        removeBtn.addEventListener('click', () => {
+            div.remove(); // Remove the entire contact-pair div
+        });
+        div.appendChild(removeBtn);
+    }
+
+    return div;
+}
+
+// --- UI Display ---
+function displayCustomersTable(customers, trips) {
+    const container = document.getElementById('customersListContainer');
+    container.innerHTML = ''; // Clear loading message
+
+    if (!customers || customers.length === 0) {
+        container.innerHTML = '<p class="no-trips-message">No customers added yet.</p>';
+        return;
+    }
+
+    // Sort customers alphabetically by name
+    customers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    const table = document.createElement('table');
+    table.classList.add('customer-table'); // Add class for specific styling if needed
+    const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
+
+    // Create table header
+    const headerRow = document.createElement('tr');
+    // Added Address, split Contact Person/Number
+    const headers = ['Name', 'Contact Person', 'Contact Number', 'Address', 'Last Visited', 'Actions'];
+    headers.forEach(headerText => {
+        const th = document.createElement('th');
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+
+    // Create table body
+    customers.forEach(customer => {
+        const row = document.createElement('tr');
+        const lastVisited = calculateLastVisited(customer.name, trips);
+
+        // Display first contact if available, otherwise N/A
+        const firstContactPerson = customer.contacts && customer.contacts.length > 0 ? customer.contacts[0].person : 'N/A';
+        const firstContactNumber = customer.contacts && customer.contacts.length > 0 ? customer.contacts[0].number : 'N/A';
+
+        // Handle potentially missing fields gracefully
+        const cells = [
+            customer.name ?? 'N/A',
+            firstContactPerson,
+            firstContactNumber,
+            customer.address ?? 'N/A',
+            lastVisited
+        ];
+
+        cells.forEach(cellData => {
+            const td = document.createElement('td');
+            td.textContent = cellData;
+            // Add specific handling for contact person later if needed (dropdown)
+            row.appendChild(td);
+        });
+
+        // Add Actions cell (Edit/Delete buttons)
+        const actionsTd = document.createElement('td');
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.classList.add('btn', 'btn-small', 'btn-edit');
+        editBtn.dataset.customerId = customer.id; // Store ID for later use
+        // editBtn.disabled = true; // REMOVE THIS LINE - Enable Edit button (functionality later)
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.classList.add('btn', 'btn-small', 'btn-delete');
+        deleteBtn.dataset.customerId = customer.id;
+        // deleteBtn.disabled = true; // REMOVE THIS LINE - Enable Delete button
+
+        // Add event listener for the delete button
+        deleteBtn.addEventListener('click', () => {
+            handleDeleteCustomer(customer.id, customer.name); // Pass ID and name for confirmation
+        });
+
+        // Add event listener for the edit button (placeholder for now)
+        editBtn.addEventListener('click', () => {
+            handleEditCustomer(customer.id);
+        });
+
+
+        actionsTd.appendChild(editBtn);
+        actionsTd.appendChild(deleteBtn);
+        row.appendChild(actionsTd);
+
+
+        tbody.appendChild(row);
+    });
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    container.appendChild(table);
+}
+
+function displayErrorMessage(message) {
+    const container = document.getElementById('customersListContainer');
+    container.innerHTML = `<p class="alert">${message}</p>`;
+}
+
+// --- Modal Handling ---
+function openModalForAdd() {
+    const modal = document.getElementById('customerModal');
+    const contactsContainer = document.getElementById('contactsContainer');
+
+    // Reset fields
+    document.getElementById('modalTitle').textContent = 'Add New Customer';
+    document.getElementById('customerId').value = ''; // Clear ID for adding
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerAddress').value = '';
+    document.getElementById('saveCustomerBtn').textContent = 'Save Customer';
+
+    // Clear existing contact pairs and add one empty one
+    contactsContainer.innerHTML = '';
+    contactsContainer.appendChild(createContactPairElement('', '', false)); // First one cannot be removed
+
+    modal.style.display = 'block';
+}
+
+function openModalForEdit(customer) {
+    const modal = document.getElementById('customerModal');
+    const contactsContainer = document.getElementById('contactsContainer');
+
+    // Populate fields
+    document.getElementById('modalTitle').textContent = 'Edit Customer';
+    document.getElementById('customerId').value = customer.id; // Set ID for editing
+    document.getElementById('customerName').value = customer.name ?? '';
+    document.getElementById('customerAddress').value = customer.address ?? '';
+    document.getElementById('saveCustomerBtn').textContent = 'Update Customer';
+
+    // Clear existing contact pairs
+    contactsContainer.innerHTML = '';
+
+    // Add contact pairs from customer data
+    if (customer.contacts && customer.contacts.length > 0) {
+        customer.contacts.forEach((contact, index) => {
+            // Only allow removal for contacts beyond the first one
+            contactsContainer.appendChild(createContactPairElement(contact.person, contact.number, index > 0));
+        });
+    } else {
+        // If no contacts exist, add one empty one that cannot be removed
+        contactsContainer.appendChild(createContactPairElement('', '', false));
+    }
+
+    modal.style.display = 'block';
+}
+
+function closeModal() {
+    const modal = document.getElementById('customerModal');
+    modal.style.display = 'none';
+}
+
+function handleSaveOrUpdateCustomer() {
+    const customerId = document.getElementById('customerId').value;
+    const name = document.getElementById('customerName').value.trim();
+    const address = document.getElementById('customerAddress').value.trim();
+    const contactsContainer = document.getElementById('contactsContainer');
+    const contactPairs = contactsContainer.querySelectorAll('.contact-pair');
+
+    if (!name) {
+        alert('Customer Name is required.');
+        return;
+    }
+
+    const contacts = [];
+    contactPairs.forEach(pair => {
+        const personInput = pair.querySelector('.contactPerson');
+        const numberInput = pair.querySelector('.contactNumber');
+        const person = personInput.value.trim();
+        const number = numberInput.value.trim();
+        // Only add if at least a person or number is provided
+        if (person || number) {
+            contacts.push({ person, number });
+        }
+    });
+
+    const customerData = {
+        name,
+        address,
+        contacts // Store the array of contacts
+    };
+
+    if (customerId) {
+        // --- Editing Existing Customer ---
+        customerData.id = parseInt(customerId); // Ensure ID is included and is a number
+        updateCustomer(customerData, (success) => {
+            if (success) {
+                alert('Customer updated successfully!');
+                closeModal();
+                loadInitialData(); // Refresh list
+            } else {
+                alert('Failed to update customer.');
+            }
+        });
+    } else {
+        // --- Adding New Customer ---
+        saveCustomer(customerData, (success) => {
+            if (success) {
+                alert('Customer added successfully!');
+                closeModal();
+                loadInitialData(); // Refresh list
+            } else {
+                alert('Failed to save customer.');
+            }
+        });
+    }
+}
+
+function handleDeleteCustomer(customerId, customerName) {
+    // Confirm before deleting
+    if (confirm(`Are you sure you want to delete customer "${customerName}"? This action cannot be undone.`)) {
+        deleteCustomer(customerId, (success) => {
+            if (success) {
+                alert(`Customer "${customerName}" deleted successfully!`);
+                loadInitialData(); // Reload the table to reflect the deletion
+            } else {
+                alert(`Failed to delete customer "${customerName}".`);
+            }
+        });
+    }
+}
+
+function handleEditCustomer(customerId) {
+    // Find the customer object from the locally stored list
+    const customerToEdit = allCustomers.find(c => c.id === customerId);
+    if (customerToEdit) {
+        openModalForEdit(customerToEdit);
+    } else {
+        console.error(`Customer with ID ${customerId} not found in local list.`);
+        alert('Could not find customer data to edit.');
+    }
+}
+
+// --- Event Listeners Setup ---
+function setupEventListeners() {
+    const addCustomerBtn = document.getElementById('addCustomerBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const saveCustomerBtn = document.getElementById('saveCustomerBtn');
+    const addContactBtn = document.getElementById('addContactBtn'); // New button
+
+    if (addCustomerBtn) addCustomerBtn.addEventListener('click', openModalForAdd);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (saveCustomerBtn) saveCustomerBtn.addEventListener('click', handleSaveOrUpdateCustomer);
+
+    // Add listener for the '+' button to add new contact pairs
+    if (addContactBtn) {
+        addContactBtn.addEventListener('click', () => {
+            const contactsContainer = document.getElementById('contactsContainer');
+            contactsContainer.appendChild(createContactPairElement('', '', true)); // New pairs can be removed
+        });
+    }
+
+    // Close modal if clicking outside of it
+    const modal = document.getElementById('customerModal');
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+}
+
+// --- Initial Load ---
+function loadInitialData() {
+    // Fetch both customers and trips
+    getCustomers(customers => {
+        allCustomers = customers;
+        getTrips(trips => {
+            allTrips = trips;
+            // Now display the table with both sets of data
+            displayCustomersTable(allCustomers, allTrips);
+        });
+    });
+} 

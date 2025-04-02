@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Customers - Trip Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Use a specific class for potential styling differences -->
+    <div class="container customers-container">
+        <h1>Manage Customers</h1>
+        <div class="page-controls">
+            <a href="index.html" class="btn back-btn">Back to Main</a>
+            <button class="btn add-customer-btn" id="addCustomerBtn">Add New Customer</button>
+        </div>
+
+        <div id="customersListContainer" class="table-container">
+            <!-- Customer table will be inserted here by customers.js -->
+            <p class="loading-message">Loading customers...</p>
+        </div>
+
+        <!-- Add/Edit Customer Modal (Hidden by default) -->
+        <div id="customerModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="closeModalBtn">&times;</span>
+                <h2 id="modalTitle">Add New Customer</h2>
+                <!-- Hidden input to store customer ID during edit -->
+                <input type="hidden" id="customerId">
+
+                <input type="text" id="customerName" placeholder="Customer Name" required>
+                <input type="text" id="customerAddress" placeholder="Address">
+
+                <div id="contactsContainer">
+                    <!-- Contact pairs will be added here -->
+                    <div class="contact-pair">
+                        <input type="text" class="contactPerson" placeholder="Contact Person">
+                        <input type="text" class="contactNumber" placeholder="Contact Number">
+                        <!-- Remove button for the first entry is hidden/disabled -->
+                    </div>
+                </div>
+                <button type="button" class="btn btn-small btn-add-contact" id="addContactBtn">+</button>
+
+                <button class="btn" id="saveCustomerBtn">Save Customer</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="customers.js"></script>
+</body>
+</html> 

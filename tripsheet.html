@@ -8,9 +8,18 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container tripsheet-container">
         <h1>Trip Sheet</h1>
         <a href="index.html" class="btn back-btn">Back to Main</a>
+
+        <!-- Add Sort Dropdown -->
+        <div class="sort-controls">
+            <label for="sortSelect">Sort by:</label>
+            <select id="sortSelect">
+                <option value="date">Date (Newest First)</option>
+                <option value="customer">Customer (A-Z, Newest First)</option>
+            </select>
+        </div>
 
         <div id="tripsListContainer" class="table-container">
             <!-- Trip table will be inserted here by tripsheet.js -->

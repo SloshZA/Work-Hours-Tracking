@@ -1,4 +1,6 @@
 let db;
+let allTrips = []; // Variable to store fetched trips
+let sortSelectElement; // Reference to the dropdown
 
 // --- IndexedDB Setup (Similar to app.js) ---
 const request = indexedDB.open('TripTrackerDB', 1);
@@ -17,6 +19,14 @@ request.onupgradeneeded = (event) => {
 request.onsuccess = (event) => {
     db = event.target.result;
     console.log('TripSheet: Database opened successfully.'); // Log success
+
+    // Get reference to sort dropdown
+    sortSelectElement = document.getElementById('sortSelect');
+    if (sortSelectElement) {
+        sortSelectElement.addEventListener('change', handleSortChange);
+    } else {
+        console.error('TripSheet: Sort select element not found.');
+    }
 
     // *** ADD A SMALL DELAY ***
     // Wait a fraction of a second before trying to load data
@@ -67,6 +77,26 @@ function getTrips(callback) {
         console.error('TripSheet: Error creating transaction:', error); // Log transaction creation error
         displayErrorMessage('Database transaction error.');
         callback([]);
+    }
+}
+
+// --- Sorting Logic ---
+function sortTrips(trips, sortBy) {
+    switch (sortBy) {
+        case 'customer':
+            // Sort by customer name (A-Z), then by date (Newest First)
+            return trips.sort((a, b) => {
+                const customerCompare = (a.customer || '').localeCompare(b.customer || '');
+                if (customerCompare !== 0) {
+                    return customerCompare;
+                }
+                // If customers are the same, sort by date descending
+                return new Date(b.date) - new Date(a.date);
+            });
+        case 'date':
+        default:
+            // Default sort by date (Newest First)
+            return trips.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 }
 
@@ -135,12 +165,24 @@ function displayErrorMessage(message) {
     container.innerHTML = `<p class="alert">${message}</p>`;
 }
 
+// --- Event Handler for Sort Change ---
+function handleSortChange() {
+    if (!sortSelectElement) return;
+    const sortBy = sortSelectElement.value;
+    console.log(`TripSheet: Sort changed to ${sortBy}`);
+    const sortedTrips = sortTrips([...allTrips], sortBy); // Sort a copy of the stored trips
+    displayTripsTable(sortedTrips); // Re-render the table with sorted data
+}
+
 // --- Initial Load ---
 // This function is now called after the delay in request.onsuccess
 function loadAndDisplayTrips() {
     console.log('TripSheet: loadAndDisplayTrips called.'); // Log initial load
     getTrips((trips) => {
-        displayTripsTable(trips);
+        allTrips = trips; // Store fetched trips globally
+        const initialSortBy = sortSelectElement ? sortSelectElement.value : 'date'; // Get initial sort value
+        const sortedTrips = sortTrips([...allTrips], initialSortBy); // Sort initially
+        displayTripsTable(sortedTrips); // Render the sorted table
     });
 }
 
