@@ -264,15 +264,29 @@ function displayCustomersTable(customers, trips) {
         const addressValue = customer.address ?? '';
         if (addressValue.startsWith('http://') || addressValue.startsWith('https://')) {
             const mapLink = document.createElement('a');
-            mapLink.href = addressValue;
-            mapLink.target = '_blank';
+            mapLink.href = '#'; // Prevent direct navigation
+            mapLink.dataset.url = addressValue; // Store the actual URL
             mapLink.textContent = 'Open Maps';
             mapLink.classList.add('map-link');
+
+            // Add click listener to prompt the user
+            mapLink.addEventListener('click', (event) => {
+                event.preventDefault(); // Stop the '#' link behavior
+                const url = event.target.dataset.url;
+                if (url) {
+                    // Ask the user for confirmation
+                    if (confirm('Open this map location in a new tab/app?')) {
+                        window.open(url, '_blank', 'noopener,noreferrer'); // Open the stored URL
+                    }
+                } else {
+                    console.error('Map link URL not found in data attribute.');
+                }
+            });
+
             addressTd.appendChild(mapLink);
         } else {
             addressTd.textContent = addressValue || 'N/A';
         }
-        // addressTd.classList.add('td-address'); // Optional: Add class if needed later
         row.appendChild(addressTd);
 
         // Last Visited Cell

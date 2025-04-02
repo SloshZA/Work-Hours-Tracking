@@ -756,7 +756,7 @@ input:focus, select:focus, textarea:focus {
     color: #00ff88;
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 18px;
+    font-size: 16px; /* Reduced from 18px */
     border-bottom: 1px solid #444;
     padding-bottom: 8px;
 }
@@ -774,7 +774,7 @@ input:focus, select:focus, textarea:focus {
     /* Change background to a dark theme color */
     background-color: #3a3a3a; /* Darker background, adjust if needed */
     /* Adjust padding - reduce left/right padding */
-    padding: 10px 10px; /* Reduced horizontal padding */
+    padding: 8px 8px; /* Reduced padding slightly */
     border-radius: 5px;
     /* Make borders thinner */
     border-left: 2px solid #00ff88; /* Thinner border */
@@ -782,14 +782,15 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     text-align: center;
     flex: 1;
-    min-width: 80px;
+    min-width: 70px; /* Adjusted min-width */
     color: #e0e0e0; /* Set default text color for the block */
+    font-size: 0.9em; /* Reduced base font size for the block content */
 }
 
 #activeTripDetails .info-block strong {
     display: block;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+    margin-bottom: 4px; /* Reduced margin */
+    font-size: 0.85em; /* Reduced from 0.9em */
     /* Change label color to be light */
     color: #ffffff; /* White or light grey for the label */
 }
