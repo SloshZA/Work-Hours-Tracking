@@ -921,3 +921,34 @@ input:focus, select:focus, textarea:focus {
     text-decoration: underline; /* Add underline on hover */
     color: #00ff88; /* Slightly brighter green on hover */
 }
+
+/* Styles for Map Choice Modal (can reuse/adjust existing modal styles) */
+#mapChoiceModal .modal-content {
+    max-width: 380px; /* Adjust size as needed */
+}
+
+#mapChoiceModal p {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #ccc;
+}
+
+/* Ensure modal-actions styles apply correctly */
+#mapChoiceModal .modal-actions {
+    /* Styles are likely already defined */
+}
+
+/* Optional: Specific button styling if needed */
+#mapChoiceModal #mapOpenBrowserBtn {
+    background-color: #3a7ca5; /* Blue */
+}
+#mapChoiceModal #mapOpenBrowserBtn:hover {
+    background-color: #2c5d7f;
+}
+
+#mapChoiceModal #mapOpenAppBtn {
+    background-color: #00cc66; /* Green */
+}
+#mapChoiceModal #mapOpenAppBtn:hover {
+    background-color: #00aa55;
+}

@@ -196,13 +196,12 @@ function displayCustomersTable(customers, trips) {
     customers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     const table = document.createElement('table');
-    table.classList.add('customer-table'); // Add class for specific styling if needed
+    table.classList.add('customer-table');
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
 
     // Create table header
     const headerRow = document.createElement('tr');
-    // Added Address, split Contact Person/Number
     const headers = ['Name', 'Contact Person', 'Contact Number', 'Address', 'Last Visited', 'Actions'];
     headers.forEach(headerText => {
         const th = document.createElement('th');
@@ -219,43 +218,37 @@ function displayCustomersTable(customers, trips) {
         // --- Create Cells ---
         const nameTd = document.createElement('td');
         nameTd.textContent = customer.name ?? 'N/A';
-        nameTd.classList.add('td-name'); // Add class
+        nameTd.classList.add('td-name');
         row.appendChild(nameTd);
 
         const contactPersonTd = document.createElement('td');
-        contactPersonTd.classList.add('td-contact-person'); // Add class
+        contactPersonTd.classList.add('td-contact-person');
         const contactNumberTd = document.createElement('td');
-        contactNumberTd.classList.add('td-contact-number'); // Add class
+        contactNumberTd.classList.add('td-contact-number');
 
         const contacts = customer.contacts || [];
-
         if (contacts.length === 0) {
             contactPersonTd.textContent = 'N/A';
             contactNumberTd.textContent = 'N/A';
         } else if (contacts.length === 1) {
             contactPersonTd.textContent = contacts[0].person || 'N/A';
             contactNumberTd.textContent = contacts[0].number || 'N/A';
-        } else { // Multiple contacts - Create dropdown
+        } else {
             const select = document.createElement('select');
             select.classList.add('contact-person-dropdown');
-
             contacts.forEach((contact, index) => {
                 const option = document.createElement('option');
                 option.value = index;
                 option.textContent = contact.person || `Contact ${index + 1}`;
                 select.appendChild(option);
             });
-
             contactNumberTd.textContent = contacts[0].number || 'N/A';
-
             select.addEventListener('change', (event) => {
                 const selectedIndex = parseInt(event.target.value, 10);
                 contactNumberTd.textContent = contacts[selectedIndex]?.number || 'N/A';
             });
-
             contactPersonTd.appendChild(select);
         }
-
         row.appendChild(contactPersonTd);
         row.appendChild(contactNumberTd);
 
@@ -264,20 +257,17 @@ function displayCustomersTable(customers, trips) {
         const addressValue = customer.address ?? '';
         if (addressValue.startsWith('http://') || addressValue.startsWith('https://')) {
             const mapLink = document.createElement('a');
-            mapLink.href = '#'; // Prevent direct navigation
-            mapLink.dataset.url = addressValue; // Store the actual URL
+            mapLink.href = '#'; // Keep href as '#'
+            mapLink.dataset.url = addressValue; // Store URL in data attribute
             mapLink.textContent = 'Open Maps';
             mapLink.classList.add('map-link');
 
-            // Add click listener to prompt the user
+            // MODIFIED: Open the choice modal instead of confirm()
             mapLink.addEventListener('click', (event) => {
-                event.preventDefault(); // Stop the '#' link behavior
+                event.preventDefault(); // Prevent '#' navigation
                 const url = event.target.dataset.url;
                 if (url) {
-                    // Ask the user for confirmation
-                    if (confirm('Open this map location in a new tab/app?')) {
-                        window.open(url, '_blank', 'noopener,noreferrer'); // Open the stored URL
-                    }
+                    openMapChoiceModal(url); // Call the function to open the new modal
                 } else {
                     console.error('Map link URL not found in data attribute.');
                 }
@@ -292,23 +282,18 @@ function displayCustomersTable(customers, trips) {
         // Last Visited Cell
         const lastVisitedTd = document.createElement('td');
         lastVisitedTd.textContent = lastVisited;
-        lastVisitedTd.classList.add('td-last-visited'); // Add class
+        lastVisitedTd.classList.add('td-last-visited');
         row.appendChild(lastVisitedTd);
 
-
-        // --- Actions Cell ---
+        // Actions Cell
         const actionsTd = document.createElement('td');
-        // actionsTd.classList.add('td-actions'); // Optional: Add class if needed later
-
         const manageBtn = document.createElement('button');
         manageBtn.textContent = 'Manage';
         manageBtn.classList.add('btn', 'btn-small', 'btn-manage');
         manageBtn.dataset.customerId = customer.id;
-
         manageBtn.addEventListener('click', () => {
             openManageModal(customer.id, customer.name);
         });
-
         actionsTd.appendChild(manageBtn);
         row.appendChild(actionsTd);
 
@@ -475,6 +460,59 @@ function closeManageModal() {
     document.getElementById('manageCustomerName').value = '';
 }
 
+// --- NEW: Map Choice Modal Functions ---
+function openMapChoiceModal(url) {
+    const modal = document.getElementById('mapChoiceModal');
+    const urlInput = document.getElementById('mapChoiceUrl');
+    if (modal && urlInput) {
+        urlInput.value = url; // Store the URL
+        modal.style.display = 'block';
+    } else {
+        console.error('Map choice modal elements not found.');
+    }
+}
+
+function closeMapChoiceModal() {
+    const modal = document.getElementById('mapChoiceModal');
+    const urlInput = document.getElementById('mapChoiceUrl');
+    if (modal && urlInput) {
+        modal.style.display = 'none';
+        urlInput.value = ''; // Clear the stored URL
+    }
+}
+
+function handleMapLinkOpen(openInApp = false) {
+    const urlInput = document.getElementById('mapChoiceUrl');
+    const url = urlInput.value;
+
+    if (!url) {
+        console.error('No URL found in map choice modal.');
+        closeMapChoiceModal(); // Close modal even if there's an error
+        return;
+    }
+
+    if (openInApp) {
+        // --- Attempt to Open in App ---
+        console.log(`Attempting to navigate to app scheme/URL: ${url}`);
+        // Use window.location.href to try and trigger app handling by the OS
+        // This is less likely to open a new blank tab if the scheme fails.
+        window.location.href = url;
+        // Note: If the URL is a standard https link, mobile OS might still prompt
+        // or open the browser, depending on user settings and OS version.
+        // If the URL uses a specific scheme like geo: or maps:, it's more likely
+        // to directly target an app or fail gracefully if none is found.
+
+    } else {
+        // --- Force Open in Browser Tab ---
+        console.log(`Opening map link in new browser tab: ${url}`);
+        // window.open with '_blank' is the standard way to open a new tab.
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    // Close the modal after attempting the action
+    closeMapChoiceModal();
+}
+
 // --- Event Listeners Setup ---
 function setupEventListeners() {
     // --- Add/Edit Modal Listeners ---
@@ -524,18 +562,36 @@ function setupEventListeners() {
         });
     }
 
+    // --- NEW: Map Choice Modal Listeners ---
+    const closeMapChoiceBtn = document.getElementById('closeMapChoiceModalBtn');
+    const mapOpenBrowserBtn = document.getElementById('mapOpenBrowserBtn');
+    const mapOpenAppBtn = document.getElementById('mapOpenAppBtn');
+    const mapCancelBtn = document.getElementById('mapCancelBtn');
+    const mapChoiceModal = document.getElementById('mapChoiceModal'); // Get modal element
+
+    if (closeMapChoiceBtn) closeMapChoiceBtn.addEventListener('click', closeMapChoiceModal);
+    if (mapCancelBtn) mapCancelBtn.addEventListener('click', closeMapChoiceModal);
+
+    if (mapOpenBrowserBtn) {
+        mapOpenBrowserBtn.addEventListener('click', () => handleMapLinkOpen(false));
+    }
+    if (mapOpenAppBtn) {
+        // Pass true, although the underlying action is the same
+        mapOpenAppBtn.addEventListener('click', () => handleMapLinkOpen(true));
+    }
 
     // --- Window Click Listeners (for closing modals) ---
     const addEditModal = document.getElementById('customerModal');
     const manageModal = document.getElementById('manageActionModal');
-
+    // Add mapChoiceModal to the list
     window.addEventListener('click', function(event) {
         if (event.target == addEditModal) {
-            closeModal(); // Close add/edit modal
+            closeModal();
         } else if (event.target == manageModal) {
-            closeManageModal(); // Close manage modal
+            closeManageModal();
+        } else if (event.target == mapChoiceModal) { // Check for map choice modal
+            closeMapChoiceModal();
         }
-        // Removed dropdown closing logic
     });
 }
 

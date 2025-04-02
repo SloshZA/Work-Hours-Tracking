@@ -63,6 +63,21 @@
             </div>
         </div>
 
+        <!-- Map Link Choice Modal -->
+        <div id="mapChoiceModal" class="modal modal-small">
+            <div class="modal-content">
+                <span id="closeMapChoiceModalBtn" class="close-button">&times;</span>
+                <h2 id="mapChoiceModalTitle">Open Map Location</h2>
+                <input type="hidden" id="mapChoiceUrl"> <!-- To store the URL -->
+                <p>How would you like to open this location?</p>
+                <div class="modal-actions">
+                    <button id="mapOpenBrowserBtn" class="btn">Open in Browser</button>
+                    <button id="mapOpenAppBtn" class="btn">Open in App</button>
+                    <button id="mapCancelBtn" class="btn btn-cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="customers.js"></script>
