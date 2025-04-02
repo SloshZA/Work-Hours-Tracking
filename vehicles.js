@@ -1,40 +1,43 @@
 let db;
 
-const request = indexedDB.open('TripTrackerDB', 2);
+const request = indexedDB.open('TripTrackerDB', 3);
 
 request.onupgradeneeded = (event) => {
-    console.log('Vehicles.js: DB upgrade needed.');
-    db = event.target.result;
-    
-    // Create vehicles store if it doesn't exist
-    if (!db.objectStoreNames.contains('vehicles')) {
-        db.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
+    console.log('Vehicles: DB upgrade needed.');
+    const dbInstance = event.target.result;
+    // Add checks for consistency
+    if (!dbInstance.objectStoreNames.contains('vehicles')) {
+        const vehicleStore = dbInstance.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
+        if (!vehicleStore.indexNames.contains('name')) {
+             vehicleStore.createIndex('name', 'name', { unique: true });
+        }
+    } else {
+        const transaction = event.target.transaction;
+        const vehicleStore = transaction.objectStore('vehicles');
+        if (!vehicleStore.indexNames.contains('name')) {
+             vehicleStore.createIndex('name', 'name', { unique: true });
+        }
     }
-    
-    // Check other required stores - this helps maintain DB structure across pages
-    if (!db.objectStoreNames.contains('trips')) {
-        db.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
-    }
-    if (!db.objectStoreNames.contains('customers')) {
-        db.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
-    }
-    
-    // Add user preferences store if it doesn't exist
-    if (!db.objectStoreNames.contains('preferences')) {
-        db.createObjectStore('preferences', { keyPath: 'id' });
-    }
+     // You might want to ensure other stores are checked here too for robustness
+    // if (!dbInstance.objectStoreNames.contains('trips')) { ... }
+    // if (!dbInstance.objectStoreNames.contains('customers')) { ... }
+    // if (!dbInstance.objectStoreNames.contains('preferences')) { ... }
 };
 
 request.onsuccess = (event) => {
     db = event.target.result;
-    console.log('Vehicles.js: Database opened successfully.');
+    console.log('Vehicles: Database opened successfully.');
     loadVehicles();
     setupEventListeners();
 };
 
 request.onerror = (event) => {
-    console.error('Vehicles.js: Error opening database:', event.target.error);
-    alert('Database could not be opened. Please check console for errors.');
+    console.error('Vehicles: Error opening database:', event.target.error);
+    // Display an error message to the user on the page
+    const container = document.getElementById('vehicleListContainer');
+    if (container) {
+        container.innerHTML = '<p class="alert">Could not connect to the database.</p>';
+    }
 };
 
 function saveVehicle(vehicle, callback) {

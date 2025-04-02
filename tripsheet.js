@@ -3,7 +3,7 @@ let allTrips = []; // Variable to store fetched trips
 let sortSelectElement; // Reference to the dropdown
 
 // --- IndexedDB Setup (Similar to app.js) ---
-const request = indexedDB.open('TripTrackerDB', 2);
+const request = indexedDB.open('TripTrackerDB', 3);
 
 request.onupgradeneeded = (event) => {
     console.log('TripSheet: DB upgrade needed.'); // Log upgrade
@@ -12,10 +12,23 @@ request.onupgradeneeded = (event) => {
         dbInstance.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
     }
     if (!dbInstance.objectStoreNames.contains('customers')) {
-        dbInstance.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
+        const customerStore = dbInstance.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
+        if (!customerStore.indexNames.contains('name')) { // Check if index exists before creating
+             customerStore.createIndex('name', 'name', { unique: false });
+        }
     }
     if (!dbInstance.objectStoreNames.contains('vehicles')) {
-        dbInstance.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
+        const vehicleStore = dbInstance.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
+         if (!vehicleStore.indexNames.contains('name')) { // Check if index exists before creating
+             vehicleStore.createIndex('name', 'name', { unique: true });
+         }
+    } else {
+         // Also check index existence if store exists during upgrade
+         const transaction = event.target.transaction;
+         const vehicleStore = transaction.objectStore('vehicles');
+         if (!vehicleStore.indexNames.contains('name')) {
+             vehicleStore.createIndex('name', 'name', { unique: true });
+         }
     }
     if (!dbInstance.objectStoreNames.contains('preferences')) {
         dbInstance.createObjectStore('preferences', { keyPath: 'id' });

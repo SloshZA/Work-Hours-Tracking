@@ -3,26 +3,28 @@ let allCustomers = [];
 let allTrips = []; // Needed for last visited date
 
 // --- IndexedDB Setup ---
-const request = indexedDB.open('TripTrackerDB', 2);
+const request = indexedDB.open('TripTrackerDB', 3);
 
 request.onupgradeneeded = (event) => {
     console.log('Customers: DB upgrade needed.');
     const dbInstance = event.target.result;
-    // Ensure object stores exist (should match other scripts)
-    if (!dbInstance.objectStoreNames.contains('trips')) {
-        dbInstance.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
-    }
+    // Add checks for consistency, though javascript.js likely creates these
     if (!dbInstance.objectStoreNames.contains('customers')) {
-        // Add indexes if needed for searching later
         const customerStore = dbInstance.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
-        customerStore.createIndex('name', 'name', { unique: false });
+        if (!customerStore.indexNames.contains('name')) {
+             customerStore.createIndex('name', 'name', { unique: false });
+        }
+    } else {
+        const transaction = event.target.transaction;
+        const customerStore = transaction.objectStore('customers');
+        if (!customerStore.indexNames.contains('name')) {
+             customerStore.createIndex('name', 'name', { unique: false });
+        }
     }
-    if (!dbInstance.objectStoreNames.contains('vehicles')) {
-        dbInstance.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
-    }
-    if (!dbInstance.objectStoreNames.contains('preferences')) {
-        dbInstance.createObjectStore('preferences', { keyPath: 'id' });
-    }
+    // You might want to ensure other stores are checked here too for robustness
+    // if (!dbInstance.objectStoreNames.contains('trips')) { ... }
+    // if (!dbInstance.objectStoreNames.contains('vehicles')) { ... }
+    // if (!dbInstance.objectStoreNames.contains('preferences')) { ... }
 };
 
 request.onsuccess = (event) => {

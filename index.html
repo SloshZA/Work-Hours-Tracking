@@ -23,15 +23,16 @@
             </select>
         </div>
 
+        <div id="activeTripInfo" style="display: none; margin-top: 20px; margin-bottom: 20px;">
+            <h3>Active Trip</h3>
+            <div id="activeTripDetails">
+                <!-- Content will be added by JavaScript -->
+            </div>
+            <button class="btn" id="completeTripBtn" style="margin-top: 15px; background-color: #dd4b39;">Complete Trip</button>
+        </div>
+
         <div id="tripForm">
-            <h2>New Trip</h2>
-            <input type="number" id="startKmInput" placeholder="Start KM">
-            <input type="number" id="endKmInput" placeholder="End KM">
-            <select id="customerSelect">
-                <option value="">-- Select Customer --</option>
-            </select>
-            <input type="text" id="purposeInput" placeholder="Purpose">
-            <button class="btn" id="saveTripBtn">Save Trip</button>
+            <button class="btn" id="saveTripBtn">Start New Trip</button>
         </div>
 
         <hr>
@@ -43,6 +44,52 @@
 
     </div>
 
-    <script src="app.js"></script>
+    <div id="startTripModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalBtn">&times;</span>
+            <h2>Start New Trip</h2>
+            <form id="startTripForm">
+                <div class="form-group">
+                    <label for="modalVehicle">Vehicle:</label>
+                    <span id="modalVehicleDisplay"></span>
+                </div>
+                <div class="form-group">
+                    <label for="modalStartKm">Start KM:</label>
+                    <input type="number" id="modalStartKm" name="startKm" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalCustomer">Customer:</label>
+                    <select id="modalCustomer" name="customer" required>
+                        <option value="">-- Select Customer --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalPurpose">Purpose:</label>
+                    <input type="text" id="modalPurpose" name="purpose" required>
+                </div>
+                <button type="submit" id="saveTripFromModalBtn">Start Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="endTripModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" id="closeEndModalBtn">&times;</span>
+            <h2>Complete Trip</h2>
+            <form id="endTripForm">
+                <div class="form-group">
+                    <label for="modalEndKm">End KM:</label>
+                    <input type="number" id="modalEndKm" name="endKm" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalWorkDetails">Work Details (Optional):</label>
+                    <textarea id="modalWorkDetails" name="workDetails" rows="4"></textarea>
+                </div>
+                <button type="submit" id="saveCompletedTripBtn">Save Completed Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="javascript.js"></script>
 </body>
 </html>
