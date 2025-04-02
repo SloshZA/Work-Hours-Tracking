@@ -116,8 +116,8 @@ function saveTrip(trip, onSuccessCallback) {
             onSuccessCallback(request.result); // Pass back the generated ID if needed
         }
         // Update vehicle preference only when starting? Or always? Let's keep it here.
-        if (trip.vehicle) {
-            savePreference('lastVehicle', trip.vehicle);
+    if (trip.vehicle) {
+        savePreference('lastVehicle', trip.vehicle);
         }
     };
     
@@ -257,7 +257,7 @@ function populateVehicleDropdown() {
             
             getPreference('lastVehicle', (lastVehicle) => {
                 if (lastVehicle && vehicleSelect.querySelector(`option[value="${lastVehicle}"]`)) {
-                    vehicleSelect.value = lastVehicle;
+                        vehicleSelect.value = lastVehicle;
                     console.log('Set vehicle dropdown to last used:', lastVehicle);
                 } else {
                     console.log('No valid lastVehicle preference found or vehicle deleted.');
@@ -345,10 +345,10 @@ function handleStartTripFormSubmit(event) {
         return;
     }
 
-    const trip = {
-        startKm: parseInt(startKm),
-        customer,
-        purpose,
+        const trip = {
+            startKm: parseInt(startKm),
+            customer,
+            purpose,
         vehicle: vehicleName,
         startTime: new Date().toISOString(),
         status: 'active',
@@ -569,12 +569,12 @@ function setupEventListeners() {
     // End Trip Modal Listeners
     if (closeEndModalBtn) {
         closeEndModalBtn.addEventListener('click', closeEndTripModal);
-    } else {
+                    } else {
         console.warn('closeEndModalBtn not found');
-    }
+                    }
     if (endTripForm) {
         endTripForm.addEventListener('submit', handleEndTripFormSubmit);
-    } else {
+                } else {
         console.warn('endTripForm not found');
     }
 
@@ -592,7 +592,7 @@ function setupEventListeners() {
     if (viewTripsBtn) {
         viewTripsBtn.addEventListener('click', () => {
             window.location.href = 'tripsheet.html';
-        });
+            });
     } else {
         console.warn('viewTripsBtn not found');
     }

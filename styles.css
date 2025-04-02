@@ -763,49 +763,35 @@ input:focus, select:focus, textarea:focus {
 /* Use Flexbox for the details container */
 #activeTripDetails {
     display: flex;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens if needed */
-    gap: 15px; /* Add space between the blocks */
-    justify-content: space-between; /* Distribute space */
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: space-between;
 }
 
 #activeTripDetails .info-block {
-    background-color: #3a3a3a;
-    padding: 10px 15px;
-    border-radius: 6px;
-    border-left: 4px solid #00ff88;
-    border-right: 4px solid #00ff88;
-    font-size: 14px;
-    flex: 1; /* Allow blocks to grow and shrink */
-    min-width: 120px; /* Minimum width before wrapping */
-    margin-bottom: 0;
-    text-align: center; /* Center the text inside the block */
+    /* Change background to a dark theme color */
+    background-color: #3a3a3a; /* Darker background, adjust if needed */
+    /* Adjust padding - reduce left/right padding */
+    padding: 10px 10px; /* Reduced horizontal padding */
+    border-radius: 5px;
+    /* Make borders thinner */
+    border-left: 2px solid #00ff88; /* Thinner border */
+    border-right: 2px solid #00ff88; /* Thinner border */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    flex: 1;
+    min-width: 80px;
+    color: #e0e0e0; /* Set default text color for the block */
 }
-
-/* Remove margin from the original rule if it conflicts */
-/* #activeTripDetails .info-block:last-child {
-    margin-bottom: 0;
-} */
 
 #activeTripDetails .info-block strong {
-    color: #bdbdbd;
-    /* margin-right: 8px; */ /* No longer needed with centered text */
-    display: block; /* Make label take its own line */
-    margin-bottom: 4px; /* Space between label and value */
-    /* Remove min-width if label is on its own line */
-    /* min-width: 80px; */
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    /* Change label color to be light */
+    color: #ffffff; /* White or light grey for the label */
 }
-
-/* Optional: Style for an End Trip button if you add one */
-/*
-#endTripBtn {
-    background-color: #dd4b39; 
-    color: white;
-    margin-top: 15px;
-}
-#endTripBtn:hover {
-    background-color: #c23321;
-}
-*/
 
 /* Style for textarea in modals */
 .form-group textarea {
