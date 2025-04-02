@@ -219,10 +219,13 @@ function displayCustomersTable(customers, trips) {
         // --- Create Cells ---
         const nameTd = document.createElement('td');
         nameTd.textContent = customer.name ?? 'N/A';
+        nameTd.classList.add('td-name'); // Add class
         row.appendChild(nameTd);
 
         const contactPersonTd = document.createElement('td');
+        contactPersonTd.classList.add('td-contact-person'); // Add class
         const contactNumberTd = document.createElement('td');
+        contactNumberTd.classList.add('td-contact-number'); // Add class
 
         const contacts = customer.contacts || [];
 
@@ -234,25 +237,23 @@ function displayCustomersTable(customers, trips) {
             contactNumberTd.textContent = contacts[0].number || 'N/A';
         } else { // Multiple contacts - Create dropdown
             const select = document.createElement('select');
-            select.classList.add('contact-person-dropdown'); // Add class for styling
+            select.classList.add('contact-person-dropdown');
 
             contacts.forEach((contact, index) => {
                 const option = document.createElement('option');
-                option.value = index; // Store index to easily find corresponding number
-                option.textContent = contact.person || `Contact ${index + 1}`; // Display name or placeholder
+                option.value = index;
+                option.textContent = contact.person || `Contact ${index + 1}`;
                 select.appendChild(option);
             });
 
-            // Set initial number based on the first contact
             contactNumberTd.textContent = contacts[0].number || 'N/A';
 
-            // Add event listener to update number cell when selection changes
             select.addEventListener('change', (event) => {
                 const selectedIndex = parseInt(event.target.value, 10);
-                contactNumberTd.textContent = contacts[selectedIndex]?.number || 'N/A'; // Update adjacent cell
+                contactNumberTd.textContent = contacts[selectedIndex]?.number || 'N/A';
             });
 
-            contactPersonTd.appendChild(select); // Add dropdown to the cell
+            contactPersonTd.appendChild(select);
         }
 
         row.appendChild(contactPersonTd);
@@ -260,29 +261,41 @@ function displayCustomersTable(customers, trips) {
 
         // Address Cell
         const addressTd = document.createElement('td');
-        addressTd.textContent = customer.address ?? 'N/A';
+        const addressValue = customer.address ?? '';
+        if (addressValue.startsWith('http://') || addressValue.startsWith('https://')) {
+            const mapLink = document.createElement('a');
+            mapLink.href = addressValue;
+            mapLink.target = '_blank';
+            mapLink.textContent = 'Open Maps';
+            mapLink.classList.add('map-link');
+            addressTd.appendChild(mapLink);
+        } else {
+            addressTd.textContent = addressValue || 'N/A';
+        }
+        // addressTd.classList.add('td-address'); // Optional: Add class if needed later
         row.appendChild(addressTd);
 
         // Last Visited Cell
         const lastVisitedTd = document.createElement('td');
         lastVisitedTd.textContent = lastVisited;
+        lastVisitedTd.classList.add('td-last-visited'); // Add class
         row.appendChild(lastVisitedTd);
 
 
         // --- Actions Cell ---
         const actionsTd = document.createElement('td');
+        // actionsTd.classList.add('td-actions'); // Optional: Add class if needed later
 
         const manageBtn = document.createElement('button');
         manageBtn.textContent = 'Manage';
         manageBtn.classList.add('btn', 'btn-small', 'btn-manage');
-        manageBtn.dataset.customerId = customer.id; // Keep ID here
+        manageBtn.dataset.customerId = customer.id;
 
-        // Update event listener to open the manage modal
         manageBtn.addEventListener('click', () => {
-            openManageModal(customer.id, customer.name); // Pass ID and name
+            openManageModal(customer.id, customer.name);
         });
 
-        actionsTd.appendChild(manageBtn); // Add only the manage button
+        actionsTd.appendChild(manageBtn);
         row.appendChild(actionsTd);
 
         tbody.appendChild(row);

@@ -136,6 +136,7 @@ th {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 10px;
+    text-align: center;
 }
 
 tr:last-child td {
@@ -881,4 +882,29 @@ input:focus, select:focus, textarea:focus {
 .modal-small h2 {
     font-size: 16px; /* Smaller title */
     margin-bottom: 15px;
+}
+
+/* Style for the "Open Maps" link in the address column */
+.map-link {
+    color: #4dabf7; /* Light blue color */
+    text-decoration: none; /* Remove underline */
+    font-weight: 500;
+}
+
+.map-link:hover {
+    color: #74c0fc; /* Lighter blue on hover */
+    text-decoration: underline; /* Add underline on hover */
+}
+
+/* Center text in specific customer table columns */
+.customer-table .td-name,
+.customer-table .td-contact-person,
+.customer-table .td-contact-number,
+.customer-table .td-last-visited {
+    text-align: center;
+}
+
+/* Adjust alignment for the dropdown within the centered cell */
+.customer-table .td-contact-person .contact-person-dropdown {
+    text-align: left; /* Keep dropdown text left-aligned */
 }
