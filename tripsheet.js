@@ -207,9 +207,9 @@ function displayTripsTable(trips) {
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
 
-    // Create table header (Remove 'Start' and 'End')
+    // Create table header (Change 'Total' to 'KM')
     const headerRow = document.createElement('tr');
-    const headers = ['Date', 'User', 'Vehicle', 'Total', 'Customer', 'Purpose', 'Actions']; // Removed 'Start', 'End'
+    const headers = ['Date', 'User', 'Vehicle', 'KM', 'Customer', 'Purpose', 'Actions']; // Changed 'Total' to 'KM'
     headers.forEach(headerText => {
         const th = document.createElement('th');
         th.textContent = headerText;

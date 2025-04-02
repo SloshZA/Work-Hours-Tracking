@@ -123,7 +123,7 @@ table {
 }
 
 th, td {
-    padding: 3px 8px;
+    padding: 3px 4px;
     text-align: left;
     border-bottom: 1px solid #444;
     color: #ffffff;
@@ -552,7 +552,7 @@ body > .container {
     }
 
     th, td {
-        padding: 2px 6px;
+        padding: 2px 3px;
         font-size: 8px;
     }
     th {
