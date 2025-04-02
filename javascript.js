@@ -1,5 +1,7 @@
 let db;
-let activeTripData = null; // Variable to hold the currently active trip
+// Use a single variable/key for any active activity
+let activeActivityData = null;
+const ACTIVE_ACTIVITY_KEY = 'activeActivityData';
 
 // --- Modal Handling (Add End Trip Modal elements) ---
 const startTripModal = document.getElementById('startTripModal');
@@ -17,6 +19,29 @@ const endTripForm = document.getElementById('endTripForm');
 const modalEndKmInput = document.getElementById('modalEndKm');
 const modalWorkDetailsInput = document.getElementById('modalWorkDetails');
 const completeTripBtn = document.getElementById('completeTripBtn'); // Button on main page
+
+// --- NEW: Add references for new modal elements ---
+const startChoiceModal = document.getElementById('startChoiceModal');
+const closeStartChoiceModalBtn = document.getElementById('closeStartChoiceModalBtn');
+const startTravelBtn = document.getElementById('startTravelBtn');
+const startOfficeBtn = document.getElementById('startOfficeBtn');
+const startChoiceCancelBtn = document.getElementById('startChoiceCancelBtn');
+
+const officeEntryModal = document.getElementById('officeEntryModal');
+const closeOfficeEntryModalBtn = document.getElementById('closeOfficeEntryModalBtn');
+const officeEntryForm = document.getElementById('officeEntryForm');
+const officeCustomerSelect = document.getElementById('officeCustomerSelect');
+const officeWorkDetails = document.getElementById('officeWorkDetails');
+const saveOfficeEntryBtn = document.getElementById('saveOfficeEntryBtn');
+const officePurposeInput = document.getElementById('officePurpose'); // Add purpose input
+
+// --- References for Active Displays ---
+const activeTripInfoDiv = document.getElementById('activeTripInfo');
+const activeTripDetailsDiv = document.getElementById('activeTripDetails');
+const activeOfficeInfoDiv = document.getElementById('activeOfficeInfo');
+const activeOfficeDetailsDiv = document.getElementById('activeOfficeDetails');
+const editOfficeWorkBtn = document.getElementById('editOfficeWorkBtn');
+const completeOfficeWorkBtn = document.getElementById('completeOfficeWorkBtn');
 
 const request = indexedDB.open('TripTrackerDB', 3);
 
@@ -64,21 +89,26 @@ request.onsuccess = (event) => {
     // Add default vehicle if it doesn't exist
     addDefaultVehicleIfNeeded(); // Call the new function
     
-    // Check for an active trip in localStorage on load
-    const storedTrip = localStorage.getItem('activeTripData');
-    if (storedTrip) {
+    // --- MODIFIED: Check for any active activity ---
+    const storedActivity = localStorage.getItem(ACTIVE_ACTIVITY_KEY);
+    if (storedActivity) {
         try {
-            activeTripData = JSON.parse(storedTrip);
-            console.log('Restored active trip from localStorage:', activeTripData);
-            displayActiveTripInfo(activeTripData); // Display it
-            // Hide the start button if a trip is active
-            const startTripButton = document.getElementById('saveTripBtn');
-            if (startTripButton) {
-                startTripButton.style.display = 'none';
+            activeActivityData = JSON.parse(storedActivity);
+            console.log('Restored active activity from localStorage:', activeActivityData);
+            if (activeActivityData.type === 'travel') {
+                displayActiveTripInfo(activeActivityData);
+            } else if (activeActivityData.type === 'office') {
+                displayActiveOfficeInfo(activeActivityData);
+            }
+            // Hide the start button if any activity is active
+            const startActivityButton = document.getElementById('saveTripBtn');
+            if (startActivityButton) {
+                startActivityButton.style.display = 'none';
             }
         } catch (e) {
-            console.error('Error parsing stored active trip data:', e);
-            localStorage.removeItem('activeTripData'); // Use localStorage
+            console.error('Error parsing stored active activity data:', e);
+            localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
+            activeActivityData = null; // Clear the variable
         }
     }
     
@@ -272,33 +302,43 @@ function populateVehicleDropdown() {
     });
 }
 
-function populateCustomerDropdown(selectElementId) {
+// --- Modify populateCustomerDropdown to accept a callback ---
+function populateCustomerDropdown(selectElementId, callback) { // Add callback parameter
     const customerSelect = document.getElementById(selectElementId);
     if (!customerSelect) {
         console.error(`Customer select element with ID ${selectElementId} not found.`);
+        if (callback) callback(); // Call callback even on error to prevent blocking
         return;
     }
 
     getCustomers((customers) => {
-        console.log('Populating customers:', customers);
+        console.log(`Populating customers for #${selectElementId}:`, customers);
         // Keep the default option
         customerSelect.innerHTML = '<option value="">-- Select Customer --</option>';
 
         if (customers && customers.length > 0) {
+            // Sort customers alphabetically
+            customers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             customers.forEach(customer => {
                 const option = document.createElement('option');
-                option.value = customer.name; // Assuming name is the identifier you want to save
+                option.value = customer.name;
                 option.textContent = customer.name;
                 customerSelect.appendChild(option);
             });
         } else {
             console.log('No customers found in database.');
-            // Optionally add a default "No customers available" option or disable
+        }
+
+        // Execute the callback function after populating
+        if (callback) {
+            callback();
         }
     });
 }
 
 // --- Modal Handling ---
+
+// Start Trip Modal (Travel) - No changes needed to open/close/submit logic itself
 function openStartTripModal() {
     const vehicleSelect = document.getElementById('vehicleSelect');
     const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
@@ -315,7 +355,9 @@ function openStartTripModal() {
     modalVehicleDisplay.textContent = vehicleName;
     modalStartKmInput.value = currentKm;
     modalPurposeInput.value = ''; // Clear previous purpose
-    populateCustomerDropdown('modalCustomer'); // Populate customers
+    populateCustomerDropdown('modalCustomer', () => {
+        // This callback is empty as the populateCustomerDropdown function now handles the callback
+    }); // Populate customers
 
     startTripModal.style.display = 'block';
 }
@@ -355,41 +397,37 @@ function handleStartTripFormSubmit(event) {
         vehicle: vehicleName,
         startTime: new Date().toISOString(),
         status: 'active',
-        user: user // Add the user field
-        // date field will be added when completing
+        user: user,
+        type: 'travel' // Explicitly set type
     };
 
-    console.log('Trip started (not saved to DB yet):', trip);
+    console.log('Travel activity started:', trip);
 
-    // Store in global variable and localStorage
-    activeTripData = trip;
+    // Store in global variable and localStorage using the unified key
+    activeActivityData = trip;
     try {
-        localStorage.setItem('activeTripData', JSON.stringify(activeTripData));
-        console.log('Active trip data saved to localStorage.');
-        savePreference('lastUser', user); // Save the selected user
+        localStorage.setItem(ACTIVE_ACTIVITY_KEY, JSON.stringify(activeActivityData));
+        console.log('Active travel data saved to localStorage.');
+        savePreference('lastUser', user);
     } catch (e) {
-        console.error('Error saving active trip data to localStorage:', e);
-        alert('Could not save trip data locally. Please try again.');
-        activeTripData = null;
+        console.error('Error saving active travel data to localStorage:', e);
+        alert('Could not save activity data locally. Please try again.');
+        activeActivityData = null;
         return;
     }
 
     displayActiveTripInfo(trip);
     closeStartTripModal();
 
-    const startTripButton = document.getElementById('saveTripBtn');
-    if (startTripButton) {
-        startTripButton.style.display = 'none';
+    const startActivityButton = document.getElementById('saveTripBtn');
+    if (startActivityButton) {
+        startActivityButton.style.display = 'none';
     }
-    // Optionally disable user/vehicle selects while trip is active
-    // if (userSelect) userSelect.disabled = true;
-    // const vehicleSelectDropdown = document.getElementById('vehicleSelect');
-    // if (vehicleSelectDropdown) vehicleSelectDropdown.disabled = true;
 }
 
-// --- End Trip Modal Functions ---
+// End Trip Modal - No changes needed
 function openEndTripModal() {
-    if (!activeTripData) {
+    if (!activeActivityData) {
         alert('No active trip found!');
         return;
     }
@@ -412,8 +450,8 @@ function closeEndTripModal() {
 
 function handleEndTripFormSubmit(event) {
     event.preventDefault();
-    if (!activeTripData) {
-        alert('Error: No active trip data found.');
+    if (!activeActivityData || activeActivityData.type !== 'travel') { // Check type
+        alert('Error: No active travel trip data found.');
         closeEndTripModal();
         return;
     }
@@ -427,55 +465,239 @@ function handleEndTripFormSubmit(event) {
     }
 
     const endKmValue = parseInt(endKm);
-    if (isNaN(endKmValue) || endKmValue < activeTripData.startKm) {
+    if (isNaN(endKmValue) || endKmValue < activeActivityData.startKm) {
         alert('End KM must be a number and greater than or equal to Start KM.');
         return;
     }
 
-    // Update the active trip data object
     const completedTrip = {
-        ...activeTripData, // Copy existing data (includes user, startTime, etc.)
+        ...activeActivityData,
         endKm: endKmValue,
         workDetails: workDetails || '',
         endTime: new Date().toISOString(),
         status: 'completed',
-        date: activeTripData.startTime // Add the date field using startTime
+        date: activeActivityData.startTime
     };
 
-    // Remove startTime if you only want 'date' in the final record
-    // delete completedTrip.startTime;
+    console.log('Attempting to save completed travel trip:', completedTrip);
 
-    console.log('Attempting to save completed trip:', completedTrip);
-
-    // Save the completed trip to IndexedDB
-    saveTrip(completedTrip, () => {
+    saveTrip(completedTrip, (success) => {
+        if (success) {
         alert('Trip completed and saved successfully!');
 
         // Clear local state
-        activeTripData = null;
-        localStorage.removeItem('activeTripData');
+            activeActivityData = null;
+            localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
 
         // Update UI
-        const activeTripInfoDiv = document.getElementById('activeTripInfo');
-        if (activeTripInfoDiv) {
-            activeTripInfoDiv.style.display = 'none';
+            if (activeTripInfoDiv) activeTripInfoDiv.style.display = 'none';
+            const startActivityButton = document.getElementById('saveTripBtn');
+            if (startActivityButton) startActivityButton.style.display = 'block';
+
+            closeEndTripModal();
+            updateVehicleKm(completedTrip.vehicle, completedTrip.endKm);
+            populateVehicleDropdown();
+        } else {
+             alert('Failed to save completed trip.');
         }
-        const startTripButton = document.getElementById('saveTripBtn');
-        if (startTripButton) {
-            startTripButton.style.display = 'block';
-        }
-        // Re-enable user/vehicle selects
-        // const userSelect = document.getElementById('userSelect');
-        // if (userSelect) userSelect.disabled = false;
-        // const vehicleSelectDropdown = document.getElementById('vehicleSelect');
-        // if (vehicleSelectDropdown) vehicleSelectDropdown.disabled = false;
-
-
-        closeEndTripModal();
-
-        updateVehicleKm(completedTrip.vehicle, completedTrip.endKm);
-        populateVehicleDropdown();
     });
+}
+
+// --- NEW: Start Choice Modal Functions ---
+function openStartChoiceModal() {
+    if (startChoiceModal) {
+        startChoiceModal.style.display = 'block';
+    }
+}
+
+function closeStartChoiceModal() {
+    if (startChoiceModal) {
+        startChoiceModal.style.display = 'none';
+    }
+}
+
+// --- NEW: Office Entry Modal Functions ---
+function openOfficeEntryModal(isEditing = false) {
+    if (officeEntryModal) {
+        let customerToSelect = ''; // Variable to hold the customer name
+
+        if (isEditing && activeActivityData && activeActivityData.type === 'office') {
+            // Store the customer to select later
+            customerToSelect = activeActivityData.customer || '';
+            // Pre-fill other fields immediately
+            officePurposeInput.value = activeActivityData.purpose || '';
+            officeWorkDetails.value = activeActivityData.workDetails || '';
+            saveOfficeEntryBtn.textContent = 'Update Office Entry';
+        } else {
+            // Clear form for new entry
+            officeCustomerSelect.value = ''; // Clear selection immediately
+            officePurposeInput.value = '';
+            officeWorkDetails.value = '';
+            saveOfficeEntryBtn.textContent = 'Start Work';
+        }
+
+        // Populate dropdown and set value in callback
+        populateCustomerDropdown('officeCustomerSelect', () => {
+            // This runs after options are added
+            if (isEditing && customerToSelect) {
+                officeCustomerSelect.value = customerToSelect;
+                console.log(`Set office modal customer dropdown to: ${customerToSelect}`);
+            }
+             // Ensure the modal is displayed after population/selection attempt
+             officeEntryModal.style.display = 'block';
+        });
+
+        // Note: We moved the display:block into the callback to ensure
+        // the dropdown is fully ready before showing the modal.
+        // If this causes issues, we can move it back out, but the selection
+        // might visually "jump" if the population takes a moment.
+    }
+}
+
+function closeOfficeEntryModal() {
+    if (officeEntryModal) {
+        officeEntryModal.style.display = 'none';
+        // Reset button text on close to the default for a new entry
+        saveOfficeEntryBtn.textContent = 'Start Work'; // Changed reset text
+    }
+}
+
+function handleSaveOfficeEntry(event) {
+    event.preventDefault();
+
+    const customer = officeCustomerSelect.value;
+    const purpose = officePurposeInput.value.trim(); // Get purpose
+    const workDetails = officeWorkDetails.value.trim();
+    const userSelect = document.getElementById('userSelect');
+    const user = userSelect ? userSelect.value : 'Unknown';
+
+    if (!user) {
+        alert('Please select a user.');
+        return;
+    }
+    if (!customer) {
+        alert('Please select a customer.');
+        return;
+    }
+    if (!purpose) {
+        alert('Please enter a purpose.');
+        return;
+    }
+    if (!workDetails) {
+        alert('Please enter work details.');
+        return;
+    }
+
+    const now = new Date().toISOString();
+    let officeEntryData;
+
+    if (activeActivityData && activeActivityData.type === 'office') {
+        // --- Editing existing active office work ---
+        console.log('Updating active office entry...');
+        officeEntryData = {
+            ...activeActivityData, // Keep original startTime, user, type etc.
+            customer: customer,
+            purpose: purpose,
+            workDetails: workDetails,
+            // Update user only if it changed? Or always? Let's update always for simplicity.
+            user: user,
+            // Don't change status or endTime here
+        };
+    } else {
+        // --- Creating new active office work ---
+        console.log('Starting new office entry...');
+        officeEntryData = {
+            user: user,
+            customer: customer,
+            purpose: purpose, // Add purpose
+            workDetails: workDetails,
+            startTime: now,
+            // endTime: now, // Remove: Set only on completion
+            date: now,
+            status: 'active', // Start as active
+            type: 'office',
+            // Fields not relevant to office work
+            vehicle: null,
+            startKm: null,
+            endKm: null
+        };
+    }
+
+    // Store in global variable and localStorage
+    activeActivityData = officeEntryData;
+    try {
+        localStorage.setItem(ACTIVE_ACTIVITY_KEY, JSON.stringify(activeActivityData));
+        console.log('Active office data saved/updated in localStorage.');
+        savePreference('lastUser', user); // Save user preference
+
+        displayActiveOfficeInfo(activeActivityData); // Display the active office info
+        closeOfficeEntryModal();
+
+        // Hide start button if it's not already hidden
+        const startActivityButton = document.getElementById('saveTripBtn');
+        if (startActivityButton) startActivityButton.style.display = 'none';
+
+    } catch (e) {
+        console.error('Error saving active office data to localStorage:', e);
+        alert('Could not save activity data locally. Please try again.');
+        // Don't clear activeActivityData here if saving failed, allow retry?
+        // Or maybe clear it to prevent inconsistent state? Let's clear it.
+        activeActivityData = null;
+        localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
+        // Potentially show the start button again if we cleared the state
+        const startActivityButton = document.getElementById('saveTripBtn');
+        if (startActivityButton) startActivityButton.style.display = 'block';
+    }
+}
+
+// --- NEW: Complete Office Work ---
+function handleCompleteOfficeWork() {
+    if (!activeActivityData || activeActivityData.type !== 'office') {
+        alert('No active office work found to complete.');
+        return;
+    }
+
+    // Confirm completion? (Optional)
+    // if (!confirm('Are you sure you want to complete this office work entry?')) {
+    //     return;
+    // }
+
+    const completedOfficeEntry = {
+        ...activeActivityData,
+        endTime: new Date().toISOString(), // Set end time now
+        status: 'completed'
+    };
+
+    console.log('Attempting to save completed office entry:', completedOfficeEntry);
+
+    saveTrip(completedOfficeEntry, (success) => { // Use generic saveTrip
+        if (success) {
+            alert('Office work completed and saved successfully!');
+
+            // Clear local state
+            activeActivityData = null;
+            localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
+
+            // Update UI
+            if (activeOfficeInfoDiv) activeOfficeInfoDiv.style.display = 'none';
+            const startActivityButton = document.getElementById('saveTripBtn');
+            if (startActivityButton) startActivityButton.style.display = 'block'; // Show start button
+
+        } else {
+            alert('Failed to save completed office work.');
+            // Keep active state? Or clear? Let's keep it for retry.
+        }
+    });
+}
+
+// --- NEW: Edit Office Work ---
+function handleEditOfficeWork() {
+     if (!activeActivityData || activeActivityData.type !== 'office') {
+        alert('No active office work found to edit.');
+        return;
+    }
+    console.log('Editing active office work:', activeActivityData);
+    openOfficeEntryModal(true); // Open modal in editing mode
 }
 
 // --- Function to update vehicle KM (Needs Implementation) ---
@@ -512,10 +734,8 @@ function updateVehicleKm(vehicleName, newKm) {
     };
 }
 
-// --- Display Active Trip Info (Shows Complete Button) ---
+// --- Display Active Trip Info (Travel) ---
 function displayActiveTripInfo(trip) {
-    const activeTripInfoDiv = document.getElementById('activeTripInfo');
-    const activeTripDetailsDiv = document.getElementById('activeTripDetails');
     const completeBtn = document.getElementById('completeTripBtn'); // Get the button
 
     if (activeTripInfoDiv && activeTripDetailsDiv && completeBtn) {
@@ -524,6 +744,8 @@ function displayActiveTripInfo(trip) {
             <div class="info-block"><strong>Customer:</strong> ${trip.customer}</div>
             <div class="info-block"><strong>Purpose:</strong> ${trip.purpose}</div>
         `;
+        // Make sure other active display is hidden
+        if (activeOfficeInfoDiv) activeOfficeInfoDiv.style.display = 'none'; // Hide office info
         activeTripInfoDiv.style.display = 'block';
         completeBtn.style.display = 'block'; // Make sure complete button is visible
     } else {
@@ -531,58 +753,99 @@ function displayActiveTripInfo(trip) {
     }
 }
 
+// --- NEW: Display Active Office Info ---
+function displayActiveOfficeInfo(officeData) {
+    if (activeOfficeInfoDiv && activeOfficeDetailsDiv && editOfficeWorkBtn && completeOfficeWorkBtn) {
+        activeOfficeDetailsDiv.innerHTML = `
+            <div class="info-block"><strong>Customer:</strong> ${officeData.customer}</div>
+            <div class="info-block"><strong>Purpose:</strong> ${officeData.purpose}</div>
+            <div class="info-block"><strong>Details:</strong> ${officeData.workDetails.replace(/\n/g, '<br>')}</div> <!-- Display newlines -->
+        `;
+        // Make sure other active display is hidden
+        if (activeTripInfoDiv) activeTripInfoDiv.style.display = 'none'; // Now this should work
+        activeOfficeInfoDiv.style.display = 'block'; // Show office info
+    } else {
+        console.error('Could not find active office display elements.');
+    }
+}
+
 // --- Event Listeners Setup ---
 function setupEventListeners() {
-    // Target the button inside the form div now
-    const startTripBtn = document.getElementById('saveTripBtn');
+    // Target the main "Start New Activity" button
+    const startNewActivityBtn = document.getElementById('saveTripBtn');
     const viewTripsBtn = document.getElementById('viewTripsBtn');
     const manageCustomersBtn = document.getElementById('manageCustomersBtn');
     const manageVehiclesBtn = document.getElementById('manageVehiclesBtn');
-    const manageDataBtn = document.getElementById('manageDataBtn'); // Get the new button
-    const completeTripBtnOnPage = document.getElementById('completeTripBtn'); // Renamed variable
+    const manageDataBtn = document.getElementById('manageDataBtn');
+    const completeTripBtnOnPage = document.getElementById('completeTripBtn'); // Travel complete
 
-    if (startTripBtn) {
-        startTripBtn.addEventListener('click', (event) => {
-            event.preventDefault(); // Prevent potential form submission if button is type="submit"
-            openStartTripModal();
+    // --- MODIFIED: Main Start Button checks for *any* active activity ---
+    if (startNewActivityBtn) {
+        startNewActivityBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            // Check if *any* activity is already active
+            if (localStorage.getItem(ACTIVE_ACTIVITY_KEY)) {
+                 alert('An activity (Travel or Office Work) is already in progress. Please complete it first.');
+                 return;
+            }
+            // Check user selected
+            const userSelect = document.getElementById('userSelect');
+            if (!userSelect || !userSelect.value) {
+                alert('Please select a user first.');
+                return;
+            }
+            openStartChoiceModal(); // Open the choice modal
         });
     } else {
-        // Updated warning message
         console.warn('Button with ID "saveTripBtn" not found');
     }
 
-    // Complete Trip Button (on main page, inside activeTripInfo)
+    // Complete Trip Button (Travel) - No change in listener setup
     if (completeTripBtnOnPage) {
         completeTripBtnOnPage.addEventListener('click', openEndTripModal);
-    } else {
-        console.warn('Button with ID "completeTripBtn" not found');
     }
 
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', closeStartTripModal);
-    } else {
-        console.warn('closeModalBtn not found');
+    // Start Trip Modal (Travel) Listeners - No change
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeStartTripModal);
+    if (startTripForm) startTripForm.addEventListener('submit', handleStartTripFormSubmit);
+
+    // End Trip Modal (Travel) Listeners - No change
+    if (closeEndModalBtn) closeEndModalBtn.addEventListener('click', closeEndTripModal);
+    if (endTripForm) endTripForm.addEventListener('submit', handleEndTripFormSubmit);
+
+    // Start Choice Modal Listeners - No change
+    if (closeStartChoiceModalBtn) closeStartChoiceModalBtn.addEventListener('click', closeStartChoiceModal);
+    if (startChoiceCancelBtn) startChoiceCancelBtn.addEventListener('click', closeStartChoiceModal);
+    if (startTravelBtn) {
+        startTravelBtn.addEventListener('click', () => {
+            closeStartChoiceModal();
+            openStartTripModal(); // Open travel modal
+        });
+    }
+    if (startOfficeBtn) {
+        startOfficeBtn.addEventListener('click', () => {
+            closeStartChoiceModal();
+            openOfficeEntryModal(false); // Open office modal for NEW entry
+        });
     }
 
-    if (startTripForm) {
-        startTripForm.addEventListener('submit', handleStartTripFormSubmit);
-    } else {
-        console.warn('startTripForm not found');
-    }
+    // Office Entry Modal Listeners
+    if (closeOfficeEntryModalBtn) closeOfficeEntryModalBtn.addEventListener('click', closeOfficeEntryModal);
+    if (officeEntryForm) officeEntryForm.addEventListener('submit', handleSaveOfficeEntry); // Handles save/update
 
-    // End Trip Modal Listeners
-    if (closeEndModalBtn) {
-        closeEndModalBtn.addEventListener('click', closeEndTripModal);
+    // --- NEW: Active Office Work Button Listeners ---
+    if (editOfficeWorkBtn) {
+        editOfficeWorkBtn.addEventListener('click', handleEditOfficeWork);
+    } else {
+        console.warn('Button with ID "editOfficeWorkBtn" not found');
+    }
+    if (completeOfficeWorkBtn) {
+        completeOfficeWorkBtn.addEventListener('click', handleCompleteOfficeWork);
                     } else {
-        console.warn('closeEndModalBtn not found');
-                    }
-    if (endTripForm) {
-        endTripForm.addEventListener('submit', handleEndTripFormSubmit);
-                } else {
-        console.warn('endTripForm not found');
+        console.warn('Button with ID "completeOfficeWorkBtn" not found');
     }
 
-    // Close modals if clicked outside the content area
+    // Close modals if clicked outside
     window.addEventListener('click', (event) => {
         if (event.target === startTripModal) {
             closeStartTripModal();
@@ -590,49 +853,36 @@ function setupEventListeners() {
         if (event.target === endTripModal) {
             closeEndTripModal();
         }
+        // --- NEW: Add checks for new modals ---
+        if (event.target === startChoiceModal) {
+            closeStartChoiceModal();
+        }
+        if (event.target === officeEntryModal) {
+            closeOfficeEntryModal();
+        }
     });
 
-    // --- View Trips Button Listener ---
+    // Navigation Button Listeners - No change
     if (viewTripsBtn) {
         viewTripsBtn.addEventListener('click', () => {
             window.location.href = 'tripsheet.html';
             });
-    } else {
-        console.warn('viewTripsBtn not found');
     }
-
-    // --- Manage Customers Button Listener ---
     if (manageCustomersBtn) {
         manageCustomersBtn.addEventListener('click', () => {
-            // Navigate to customers.html
             window.location.href = 'customers.html';
         });
-    } else {
-        console.warn('manageCustomersBtn not found');
     }
-
-    // --- Manage Vehicles Button Listener ---
     if (manageVehiclesBtn) {
         manageVehiclesBtn.addEventListener('click', () => {
-            // Navigate to vehicles.html
             window.location.href = 'vehicles.html';
         });
-    } else {
-        console.warn('manageVehiclesBtn not found');
     }
-
-    // --- Data Management Button Listener ---
     if (manageDataBtn) {
         manageDataBtn.addEventListener('click', () => {
-            window.location.href = 'datamanagement.html'; // Navigate to the new page
+            window.location.href = 'datamanagement.html';
         });
-    } else {
-        console.warn('manageDataBtn not found');
     }
-
-    // Add listener for import button if it exists and is needed
-    // const importTripBtn = document.getElementById('importTripBtn');
-    // if (importTripBtn) { ... }
 }
 
 // --- Function to add default vehicle ---

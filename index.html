@@ -31,8 +31,20 @@
             <button class="btn" id="completeTripBtn" style="margin-top: 15px; background-color: #dd4b39;">Complete Trip</button>
         </div>
 
+        <!-- NEW: Active Office Work Display -->
+        <div id="activeOfficeInfo" style="display: none; margin-top: 20px; margin-bottom: 20px;">
+            <h3>Active Office Work</h3>
+            <div id="activeOfficeDetails">
+                <!-- Content will be added by JavaScript -->
+            </div>
+            <div class="modal-actions" style="margin-top: 15px;">
+                 <button class="btn" id="editOfficeWorkBtn">Edit Work</button>
+                 <button class="btn" id="completeOfficeWorkBtn" style="background-color: #dd4b39;">Complete Work</button>
+            </div>
+        </div>
+
         <div id="tripForm">
-            <button class="btn" id="saveTripBtn">Start New Trip</button>
+            <button class="btn" id="saveTripBtn">Start New Activity</button>
         </div>
 
         <hr>
@@ -87,6 +99,46 @@
                     <textarea id="modalWorkDetails" name="workDetails" rows="4"></textarea>
                 </div>
                 <button type="submit" id="saveCompletedTripBtn">Save Completed Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Start Choice Modal -->
+    <div id="startChoiceModal" class="modal modal-small" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" id="closeStartChoiceModalBtn">&times;</span>
+            <h2>Select Activity Type</h2>
+            <div class="modal-actions">
+                <button id="startTravelBtn" class="btn">Travel</button>
+                <button id="startOfficeBtn" class="btn">Office Work</button>
+                <button id="startChoiceCancelBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Office Entry Modal -->
+    <div id="officeEntryModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" id="closeOfficeEntryModalBtn">&times;</span>
+            <h2>Log Office Work</h2>
+            <form id="officeEntryForm">
+                <div class="form-group">
+                    <label for="officeCustomerSelect">Customer:</label>
+                    <select id="officeCustomerSelect" name="customer" required>
+                        <option value="">-- Select Customer --</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+                <!-- NEW: Purpose Field -->
+                <div class="form-group">
+                    <label for="officePurpose">Purpose:</label>
+                    <input type="text" id="officePurpose" name="purpose" required>
+                </div>
+                <div class="form-group">
+                    <label for="officeWorkDetails">Work Details:</label>
+                    <textarea id="officeWorkDetails" name="workDetails" rows="5" required></textarea>
+                </div>
+                <button type="submit" id="saveOfficeEntryBtn" class="btn">Save Office Entry</button>
             </form>
         </div>
     </div>
