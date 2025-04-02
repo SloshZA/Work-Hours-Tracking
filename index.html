@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Trip Tracker</h1>
+
+        <div id="tripForm">
+            <h2>New Trip</h2>
+            <input type="number" id="startKmInput" placeholder="Start KM">
+            <input type="number" id="endKmInput" placeholder="End KM">
+            <select id="customerSelect">
+                <option value="">-- Select Customer --</option>
+            </select>
+            <input type="text" id="purposeInput" placeholder="Purpose">
+            <button class="btn" id="saveTripBtn">Save Trip</button>
+        </div>
+
+        <hr>
+
+        <button class="btn" id="viewTripsBtn">View Trips</button>
+        <button class="btn" id="manageCustomersBtn">Manage Customers</button>
+        <button class="btn" id="importTripBtn">Import Trip from Google Maps</button>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #1e1e1e;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+h1 {
+    color: #00ff88;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.btn {
+    background-color: #00ff88;
+    color: #121212;
+    border: none;
+    padding: 12px 24px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%;
+}
+
+.btn:hover {
+    background-color: #00cc66;
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+input, select {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #444;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+    border-color: #00ff88;
+    outline: none;
+}
+
+.alert {
+    background-color: #ff4444;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+#tripForm {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #2c2c2c;
+    border-radius: 10px;
+}
+
+#tripForm h2 {
+    color: #00ff88;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 20px;
+    text-align: left;
+}
+
+#tripForm input {
+    margin-bottom: 15px;
+}
+
+#tripForm .btn {
+    margin-top: 10px;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #444;
+    margin: 30px 0;
+}
+
+.table-container {
+    margin-top: 20px;
+    width: 100%;
+    overflow-x: auto; /* Add horizontal scroll for small screens */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background-color: #2c2c2c;
+    border-radius: 8px;
+    overflow: hidden; /* Ensures border-radius clips content */
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+th {
+    background-color: #3a3a3a;
+    color: #00ff88;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+tr:last-child td {
+    border-bottom: none; /* Remove border from last row */
+}
+
+tr:hover {
+    background-color: #383838; /* Subtle hover effect */
+}
+
+.no-trips-message {
+    color: #aaa;
+    margin-top: 20px;
+    font-style: italic;
+}
+
+.back-btn {
+    background-color: #444; /* Different color for back button */
+    color: #ffffff;
+    margin-bottom: 20px; /* Add space below the back button */
+    display: inline-block; /* Allow setting width */
+    width: auto; /* Don't force full width */
+    padding: 10px 20px;
+}
+
+.back-btn:hover {
+    background-color: #555;
+}
+
+.loading-message, .no-trips-message {
+    color: #aaa;
+    margin-top: 20px;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Adjust container max-width for trip sheet if needed */
+/* Example: Allow wider table on trip sheet */
+body > .container { /* Target only the direct child container of body */
+    max-width: 800px; /* Increase max-width for the trip sheet page */
+}
+
+/* Keep the main page container narrow */
+/* We might need a more specific selector if structure changes */
+/* For now, this targets all containers */
