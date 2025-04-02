@@ -208,55 +208,74 @@ function displayCustomersTable(customers, trips) {
         const row = document.createElement('tr');
         const lastVisited = calculateLastVisited(customer.name, trips);
 
-        // Display first contact if available, otherwise N/A
-        const firstContactPerson = customer.contacts && customer.contacts.length > 0 ? customer.contacts[0].person : 'N/A';
-        const firstContactNumber = customer.contacts && customer.contacts.length > 0 ? customer.contacts[0].number : 'N/A';
+        // --- Create Cells ---
+        const nameTd = document.createElement('td');
+        nameTd.textContent = customer.name ?? 'N/A';
+        row.appendChild(nameTd);
 
-        // Handle potentially missing fields gracefully
-        const cells = [
-            customer.name ?? 'N/A',
-            firstContactPerson,
-            firstContactNumber,
-            customer.address ?? 'N/A',
-            lastVisited
-        ];
+        const contactPersonTd = document.createElement('td');
+        const contactNumberTd = document.createElement('td');
 
-        cells.forEach(cellData => {
-            const td = document.createElement('td');
-            td.textContent = cellData;
-            // Add specific handling for contact person later if needed (dropdown)
-            row.appendChild(td);
-        });
+        const contacts = customer.contacts || [];
 
-        // Add Actions cell (Edit/Delete buttons)
+        if (contacts.length === 0) {
+            contactPersonTd.textContent = 'N/A';
+            contactNumberTd.textContent = 'N/A';
+        } else if (contacts.length === 1) {
+            contactPersonTd.textContent = contacts[0].person || 'N/A';
+            contactNumberTd.textContent = contacts[0].number || 'N/A';
+        } else { // Multiple contacts - Create dropdown
+            const select = document.createElement('select');
+            select.classList.add('contact-person-dropdown'); // Add class for styling
+
+            contacts.forEach((contact, index) => {
+                const option = document.createElement('option');
+                option.value = index; // Store index to easily find corresponding number
+                option.textContent = contact.person || `Contact ${index + 1}`; // Display name or placeholder
+                select.appendChild(option);
+            });
+
+            // Set initial number based on the first contact
+            contactNumberTd.textContent = contacts[0].number || 'N/A';
+
+            // Add event listener to update number cell when selection changes
+            select.addEventListener('change', (event) => {
+                const selectedIndex = parseInt(event.target.value, 10);
+                contactNumberTd.textContent = contacts[selectedIndex]?.number || 'N/A'; // Update adjacent cell
+            });
+
+            contactPersonTd.appendChild(select); // Add dropdown to the cell
+        }
+
+        row.appendChild(contactPersonTd);
+        row.appendChild(contactNumberTd);
+
+        // Address Cell
+        const addressTd = document.createElement('td');
+        addressTd.textContent = customer.address ?? 'N/A';
+        row.appendChild(addressTd);
+
+        // Last Visited Cell
+        const lastVisitedTd = document.createElement('td');
+        lastVisitedTd.textContent = lastVisited;
+        row.appendChild(lastVisitedTd);
+
+
+        // --- Actions Cell ---
         const actionsTd = document.createElement('td');
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Edit';
-        editBtn.classList.add('btn', 'btn-small', 'btn-edit');
-        editBtn.dataset.customerId = customer.id; // Store ID for later use
-        // editBtn.disabled = true; // REMOVE THIS LINE - Enable Edit button (functionality later)
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.classList.add('btn', 'btn-small', 'btn-delete');
-        deleteBtn.dataset.customerId = customer.id;
-        // deleteBtn.disabled = true; // REMOVE THIS LINE - Enable Delete button
+        const manageBtn = document.createElement('button');
+        manageBtn.textContent = 'Manage';
+        manageBtn.classList.add('btn', 'btn-small', 'btn-manage');
+        manageBtn.dataset.customerId = customer.id; // Keep ID here
 
-        // Add event listener for the delete button
-        deleteBtn.addEventListener('click', () => {
-            handleDeleteCustomer(customer.id, customer.name); // Pass ID and name for confirmation
+        // Update event listener to open the manage modal
+        manageBtn.addEventListener('click', () => {
+            openManageModal(customer.id, customer.name); // Pass ID and name
         });
 
-        // Add event listener for the edit button (placeholder for now)
-        editBtn.addEventListener('click', () => {
-            handleEditCustomer(customer.id);
-        });
-
-
-        actionsTd.appendChild(editBtn);
-        actionsTd.appendChild(deleteBtn);
+        actionsTd.appendChild(manageBtn); // Add only the manage button
         row.appendChild(actionsTd);
-
 
         tbody.appendChild(row);
     });
@@ -404,32 +423,85 @@ function handleEditCustomer(customerId) {
     }
 }
 
+// --- NEW: Manage Action Modal Functions ---
+function openManageModal(customerId, customerName) {
+    const modal = document.getElementById('manageActionModal');
+    document.getElementById('manageModalTitle').textContent = `Manage: ${customerName}`;
+    document.getElementById('manageCustomerId').value = customerId;
+    document.getElementById('manageCustomerName').value = customerName; // Store name too
+    modal.style.display = 'block';
+}
+
+function closeManageModal() {
+    const modal = document.getElementById('manageActionModal');
+    modal.style.display = 'none';
+    // Clear stored values (optional but good practice)
+    document.getElementById('manageCustomerId').value = '';
+    document.getElementById('manageCustomerName').value = '';
+}
+
 // --- Event Listeners Setup ---
 function setupEventListeners() {
+    // --- Add/Edit Modal Listeners ---
     const addCustomerBtn = document.getElementById('addCustomerBtn');
-    const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn'); // For add/edit modal
     const saveCustomerBtn = document.getElementById('saveCustomerBtn');
-    const addContactBtn = document.getElementById('addContactBtn'); // New button
+    const addContactBtn = document.getElementById('addContactBtn');
 
     if (addCustomerBtn) addCustomerBtn.addEventListener('click', openModalForAdd);
-    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal); // Close add/edit modal
     if (saveCustomerBtn) saveCustomerBtn.addEventListener('click', handleSaveOrUpdateCustomer);
-
-    // Add listener for the '+' button to add new contact pairs
     if (addContactBtn) {
         addContactBtn.addEventListener('click', () => {
             const contactsContainer = document.getElementById('contactsContainer');
-            contactsContainer.appendChild(createContactPairElement('', '', true)); // New pairs can be removed
+            contactsContainer.appendChild(createContactPairElement('', '', true));
         });
     }
 
-    // Close modal if clicking outside of it
-    const modal = document.getElementById('customerModal');
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            closeModal();
-        }
+    // --- Manage Action Modal Listeners ---
+    const closeManageModalBtn = document.getElementById('closeManageModalBtn');
+    const manageEditBtn = document.getElementById('manageEditBtn');
+    const manageDeleteBtn = document.getElementById('manageDeleteBtn');
+    const manageCancelBtn = document.getElementById('manageCancelBtn');
+
+    if (closeManageModalBtn) closeManageModalBtn.addEventListener('click', closeManageModal);
+    if (manageCancelBtn) manageCancelBtn.addEventListener('click', closeManageModal);
+
+    if (manageEditBtn) {
+        manageEditBtn.addEventListener('click', () => {
+            const customerId = document.getElementById('manageCustomerId').value;
+            if (customerId) {
+                handleEditCustomer(parseInt(customerId)); // Ensure ID is number
+            }
+            closeManageModal(); // Close this modal after initiating edit
+        });
     }
+
+    if (manageDeleteBtn) {
+        manageDeleteBtn.addEventListener('click', () => {
+            const customerId = document.getElementById('manageCustomerId').value;
+            const customerName = document.getElementById('manageCustomerName').value;
+            if (customerId && customerName) {
+                // handleDeleteCustomer already includes confirmation
+                handleDeleteCustomer(parseInt(customerId), customerName); // Ensure ID is number
+            }
+            closeManageModal(); // Close this modal after initiating delete
+        });
+    }
+
+
+    // --- Window Click Listeners (for closing modals) ---
+    const addEditModal = document.getElementById('customerModal');
+    const manageModal = document.getElementById('manageActionModal');
+
+    window.addEventListener('click', function(event) {
+        if (event.target == addEditModal) {
+            closeModal(); // Close add/edit modal
+        } else if (event.target == manageModal) {
+            closeManageModal(); // Close manage modal
+        }
+        // Removed dropdown closing logic
+    });
 }
 
 // --- Initial Load ---

@@ -46,6 +46,23 @@
             </div>
         </div>
 
+        <!-- Manage Action Modal (Hidden by default) -->
+        <div id="manageActionModal" class="modal modal-small">
+            <div class="modal-content">
+                <span class="close-btn" id="closeManageModalBtn">&times;</span>
+                <h2 id="manageModalTitle">Manage Customer</h2>
+                <!-- Hidden fields to store context -->
+                <input type="hidden" id="manageCustomerId">
+                <input type="hidden" id="manageCustomerName">
+
+                <div class="modal-actions">
+                    <button class="btn btn-edit" id="manageEditBtn">Edit Customer</button>
+                    <button class="btn btn-delete" id="manageDeleteBtn">Delete Customer</button>
+                    <button class="btn btn-cancel" id="manageCancelBtn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="customers.js"></script>
