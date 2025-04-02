@@ -846,3 +846,39 @@ input:focus, select:focus, textarea:focus {
     background-color: #c23321;
     transform: translateY(-2px); /* Keep consistent hover */
 }
+
+/* Style for the clickable total cell (keep or adjust) */
+.total-km-cell {
+    cursor: pointer;
+    color: #00ff88; /* Make it stand out */
+    font-weight: bold;
+    text-decoration: underline;
+    text-decoration-color: #555; /* Subtle underline */
+    text-decoration-thickness: 1px;
+}
+.total-km-cell:hover {
+    color: #ffffff; /* Brighten on hover */
+    text-decoration-color: #aaa;
+}
+
+/* Add styling for the KM Details Modal content */
+.km-details-content p {
+    margin: 10px 0;
+    font-size: 1.1em; /* Slightly larger text */
+    color: #e0e0e0;
+}
+
+.km-details-content strong {
+    color: #00ff88; /* Highlight labels */
+    margin-right: 8px;
+}
+
+/* Ensure the small modal style applies */
+.modal-small .modal-content {
+    max-width: 300px; /* Even smaller for this specific modal */
+    padding: 20px;
+}
+.modal-small h2 {
+    font-size: 16px; /* Smaller title */
+    margin-bottom: 15px;
+}

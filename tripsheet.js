@@ -1,6 +1,7 @@
 let db;
 let allTrips = []; // Variable to store fetched trips
 let sortSelectElement; // Reference to the dropdown
+let kmDetailsModal, closeKmModalBtn, modalStartKmValue, modalEndKmValue; // Add variables for the new modal elements
 
 // --- IndexedDB Setup (Similar to app.js) ---
 const request = indexedDB.open('TripTrackerDB', 3);
@@ -54,6 +55,11 @@ request.onsuccess = (event) => {
         loadAndDisplayTrips();
     }, 100); // 100 milliseconds delay (adjust if needed)
 
+    // Get KM Details Modal elements
+    kmDetailsModal = document.getElementById('kmDetailsModal');
+    closeKmModalBtn = document.getElementById('closeKmModalBtn');
+    modalStartKmValue = document.getElementById('modalStartKmValue');
+    modalEndKmValue = document.getElementById('modalEndKmValue');
 };
 
 request.onerror = (event) => {
@@ -187,12 +193,12 @@ function sortTrips(trips, sortBy) {
 
 // --- UI Display ---
 function displayTripsTable(trips) {
-    console.log('TripSheet: displayTripsTable called with trips:', trips); // Log data passed to display
+    console.log('TripSheet: displayTripsTable called with trips:', trips);
     const container = document.getElementById('tripsListContainer');
     container.innerHTML = '';
 
     if (!trips || trips.length === 0) {
-        console.log('TripSheet: No trips found to display.'); // Log empty state
+        console.log('TripSheet: No trips found to display.');
         container.innerHTML = '<p class="no-trips-message">No trips recorded yet.</p>';
         return;
     }
@@ -201,9 +207,9 @@ function displayTripsTable(trips) {
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
 
-    // Create table header
+    // Create table header (Remove 'Start' and 'End')
     const headerRow = document.createElement('tr');
-    const headers = ['Date', 'User', 'Vehicle', 'Start', 'End', 'Total', 'Customer', 'Purpose', 'Actions'];
+    const headers = ['Date', 'User', 'Vehicle', 'Total', 'Customer', 'Purpose', 'Actions']; // Removed 'Start', 'End'
     headers.forEach(headerText => {
         const th = document.createElement('th');
         th.textContent = headerText;
@@ -212,36 +218,63 @@ function displayTripsTable(trips) {
     thead.appendChild(headerRow);
 
     // Create table body
-    trips.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
+    trips.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     trips.forEach(trip => {
         const row = document.createElement('tr');
+        row.dataset.tripId = trip.id; // Store trip ID on the row
 
         const totalKm = (trip.endKm && trip.startKm) ? (trip.endKm - trip.startKm) : 'N/A';
         const formattedDate = trip.date ? new Date(trip.date).toLocaleDateString() : 'N/A';
 
-        const cells = [
-            formattedDate,
-            trip.user ?? 'N/A',
-            trip.vehicle ?? 'N/A',
-            trip.startKm ?? 'N/A',
-            trip.endKm ?? 'N/A',
-            totalKm,
-            trip.customer ?? 'N/A',
-            trip.purpose ?? 'N/A'
-        ];
+        // Create cells (Remove startKmCell and endKmCell)
+        const dateCell = document.createElement('td');
+        dateCell.textContent = formattedDate;
+        row.appendChild(dateCell);
 
-        cells.forEach(cellData => {
-            const td = document.createElement('td');
-            td.textContent = cellData;
-            row.appendChild(td);
+        const userCell = document.createElement('td');
+        userCell.textContent = trip.user ?? 'N/A';
+        row.appendChild(userCell);
+
+        const vehicleCell = document.createElement('td');
+        vehicleCell.textContent = trip.vehicle ?? 'N/A';
+        row.appendChild(vehicleCell);
+
+        // REMOVED startKmCell creation
+        // REMOVED endKmCell creation
+
+        const totalKmCell = document.createElement('td');
+        totalKmCell.textContent = totalKm;
+        totalKmCell.classList.add('total-km-cell');
+        // Add click listener to open the modal
+        totalKmCell.addEventListener('click', () => {
+            // Get the trip ID from the row
+            const clickedTripId = parseInt(row.dataset.tripId);
+            // Find the trip data
+            const clickedTrip = allTrips.find(t => t.id === clickedTripId);
+            if (clickedTrip) {
+                openKmDetailsModal(clickedTrip.startKm, clickedTrip.endKm);
+            } else {
+                console.error('Could not find trip data for ID:', clickedTripId);
+                // Optionally show default values or an error in the modal
+                openKmDetailsModal('Error', 'Error');
+            }
         });
+        row.appendChild(totalKmCell);
+
+        const customerCell = document.createElement('td');
+        customerCell.textContent = trip.customer ?? 'N/A';
+        row.appendChild(customerCell);
+
+        const purposeCell = document.createElement('td');
+        purposeCell.textContent = trip.purpose ?? 'N/A';
+        row.appendChild(purposeCell);
 
         // Add Manage button
         const actionCell = document.createElement('td');
         const manageButton = document.createElement('button');
         manageButton.textContent = 'Manage';
-        manageButton.className = 'btn btn-small';
+        manageButton.className = 'btn btn-small btn-manage';
         manageButton.dataset.tripId = trip.id;
         manageButton.addEventListener('click', function() {
             handleManageTrip(trip.id);
@@ -255,7 +288,7 @@ function displayTripsTable(trips) {
     table.appendChild(thead);
     table.appendChild(tbody);
     container.appendChild(table);
-    console.log('TripSheet: Table rendered.'); // Log table rendering
+    console.log('TripSheet: Table rendered.');
 }
 
 function displayErrorMessage(message) {
@@ -465,50 +498,75 @@ function saveEditedTrip() {
     };
 }
 
-// Add event listeners for manage modal buttons
+// --- KM Details Modal Functions ---
+function openKmDetailsModal(startKm, endKm) {
+    if (!kmDetailsModal || !modalStartKmValue || !modalEndKmValue) {
+        console.error('KM Details Modal elements not found.');
+        return;
+    }
+    modalStartKmValue.textContent = startKm ?? 'N/A';
+    modalEndKmValue.textContent = endKm ?? 'N/A';
+    kmDetailsModal.style.display = 'block';
+}
+
+function closeKmDetailsModal() {
+    if (kmDetailsModal) {
+        kmDetailsModal.style.display = 'none';
+    }
+}
+
+// Add event listeners for manage modal buttons AND KM Details Modal
 document.addEventListener('DOMContentLoaded', () => {
-    // Modal close button
+    // Get KM Details Modal elements
+    kmDetailsModal = document.getElementById('kmDetailsModal');
+    closeKmModalBtn = document.getElementById('closeKmModalBtn');
+    modalStartKmValue = document.getElementById('modalStartKmValue');
+    modalEndKmValue = document.getElementById('modalEndKmValue');
+
+    // KM Details Modal close button
+    if (closeKmModalBtn) {
+        closeKmModalBtn.addEventListener('click', closeKmDetailsModal);
+    }
+
+    // Manage Action Modal close button
     const closeManageModalBtn = document.getElementById('closeManageModalBtn');
     if (closeManageModalBtn) {
         closeManageModalBtn.addEventListener('click', () => {
             document.getElementById('manageActionModal').style.display = 'none';
         });
     }
-    
-    // Edit button
+
+    // Edit button (Manage Modal)
     const manageEditBtn = document.getElementById('manageEditBtn');
     if (manageEditBtn) {
         manageEditBtn.addEventListener('click', () => {
             const tripId = parseInt(document.getElementById('manageTripId').value);
-            // Hide the manage modal
             document.getElementById('manageActionModal').style.display = 'none';
-            // Open the edit modal
             openEditTripModal(tripId);
         });
     }
-    
-    // Delete button
+
+    // Delete button (Manage Modal)
     const manageDeleteBtn = document.getElementById('manageDeleteBtn');
     if (manageDeleteBtn) {
         manageDeleteBtn.addEventListener('click', () => {
             const tripId = parseInt(document.getElementById('manageTripId').value);
             const tripDate = document.getElementById('manageTripDate').value;
-            
             if (confirm(`Are you sure you want to delete this trip from ${tripDate}?`)) {
                 deleteTrip(tripId);
                 document.getElementById('manageActionModal').style.display = 'none';
             }
         });
     }
-    
-    // Cancel button
+
+    // Cancel button (Manage Modal)
     const manageCancelBtn = document.getElementById('manageCancelBtn');
     if (manageCancelBtn) {
         manageCancelBtn.addEventListener('click', () => {
             document.getElementById('manageActionModal').style.display = 'none';
         });
     }
-    
+
     // Edit Trip Modal Event Listeners
     const closeEditModalBtn = document.getElementById('closeEditModalBtn');
     if (closeEditModalBtn) {
@@ -516,16 +574,30 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('editTripModal').style.display = 'none';
         });
     }
-    
+
     const saveTripEditBtn = document.getElementById('saveTripEditBtn');
     if (saveTripEditBtn) {
         saveTripEditBtn.addEventListener('click', saveEditedTrip);
     }
-    
+
     const cancelTripEditBtn = document.getElementById('cancelTripEditBtn');
     if (cancelTripEditBtn) {
         cancelTripEditBtn.addEventListener('click', () => {
             document.getElementById('editTripModal').style.display = 'none';
         });
     }
+
+    // Close modals if clicked outside the content area
+    window.addEventListener('click', (event) => {
+        if (event.target === document.getElementById('manageActionModal')) {
+            document.getElementById('manageActionModal').style.display = 'none';
+        }
+        if (event.target === document.getElementById('editTripModal')) {
+            document.getElementById('editTripModal').style.display = 'none';
+        }
+        // Add check for the new KM Details modal
+        if (event.target === kmDetailsModal) {
+            closeKmDetailsModal();
+        }
+    });
 }); 
