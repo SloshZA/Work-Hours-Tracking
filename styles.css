@@ -110,7 +110,6 @@ hr {
 .table-container {
     margin-top: 15px;
     width: 100%;
-    overflow-x: auto;
 }
 
 table {
@@ -128,7 +127,6 @@ th, td {
     border-bottom: 1px solid #444;
     color: #ffffff;
     font-size: 9px;
-    white-space: nowrap;
 }
 
 th {
