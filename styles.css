@@ -903,3 +903,68 @@ input:focus, select:focus, textarea:focus {
 #vehicleModal #saveVehicleBtn {
     margin-top: 20px;
 }
+
+/* Add these rules to your styles.css file */
+
+#activeOfficeDetails {
+    display: flex;          /* Use flexbox for the main container */
+    flex-direction: column; /* Stack children vertically (row first, then details) */
+    gap: 15px;              /* Increased gap slightly for more separation */
+    text-align: left;       /* Ensure content aligns left */
+}
+
+.office-info-row {
+    display: flex;          /* Use flexbox for the Customer/Purpose row */
+    flex-wrap: wrap;        /* Allow items to wrap on small screens if needed */
+    gap: 10px;              /* Add space between Customer and Purpose blocks */
+}
+
+/* Styling for the Customer/Purpose blocks specifically */
+.office-info-row .info-block {
+    flex-grow: 1;           /* Allow blocks to grow */
+    flex-basis: calc(50% - 5px); /* Aim for 2 columns, accounting for gap */
+    min-width: 150px;       /* Prevent blocks from becoming too narrow */
+    box-sizing: border-box; /* Include padding/border in width calculation */
+    background-color: #3a3a3a; /* Keep the darker background for these */
+    padding: 10px;
+    border: 1px solid #555; /* Use a slightly darker border */
+    border-radius: 4px;
+}
+
+/* Style for the new Work Details section */
+.work-details-section {
+    width: 100%;            /* Make the details section take full width */
+    margin-top: 5px;        /* Add a little space above it */
+}
+
+.work-details-section strong {
+    display: block;         /* Make the label block-level */
+    margin-bottom: 5px;     /* Space below the label */
+    color: #00ff88;         /* Style the label color */
+    font-weight: 500;
+}
+
+/* Style for the new editable textarea */
+.work-details-section .details-content-editable {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #3a3a3a; /* Slightly different background */
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 5px; /* Space below the label */
+    resize: vertical; /* Allow vertical resize by user */
+    min-height: 60px; /* Minimum height */
+    overflow-y: hidden; /* Hide scrollbar initially for auto-resize */
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.work-details-section .details-content-editable:focus {
+    outline: none;
+    border-color: #00ff88;
+    background-color: #444; /* Darker background when focused */
+}

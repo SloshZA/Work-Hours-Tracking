@@ -756,14 +756,48 @@ function displayActiveTripInfo(trip) {
 // --- NEW: Display Active Office Info ---
 function displayActiveOfficeInfo(officeData) {
     if (activeOfficeInfoDiv && activeOfficeDetailsDiv && editOfficeWorkBtn && completeOfficeWorkBtn) {
+        // Create a container for the top row (Customer & Purpose)
         activeOfficeDetailsDiv.innerHTML = `
-            <div class="info-block"><strong>Customer:</strong> ${officeData.customer}</div>
-            <div class="info-block"><strong>Purpose:</strong> ${officeData.purpose}</div>
-            <div class="info-block"><strong>Details:</strong> ${officeData.workDetails.replace(/\n/g, '<br>')}</div> <!-- Display newlines -->
+            <div class="office-info-row">
+                <div class="info-block office-customer"><strong>Customer:</strong> ${officeData.customer}</div>
+                <div class="info-block office-purpose"><strong>Purpose:</strong> ${officeData.purpose}</div>
+            </div>
+            <div class="work-details-section">
+                <strong>Work Details:</strong>
+                <textarea id="activeWorkDetailsTextarea" class="details-content-editable">${officeData.workDetails}</textarea>
+            </div>
         `;
+
+        // Add event listener to the new textarea
+        const detailsTextarea = document.getElementById('activeWorkDetailsTextarea');
+        if (detailsTextarea) {
+            detailsTextarea.addEventListener('change', (event) => {
+                if (activeActivityData && activeActivityData.type === 'office') {
+                    console.log('Work details changed, updating...');
+                    activeActivityData.workDetails = event.target.value;
+                    try {
+                        localStorage.setItem(ACTIVE_ACTIVITY_KEY, JSON.stringify(activeActivityData));
+                        console.log('Active office data updated in localStorage after details edit.');
+                    } catch (e) {
+                        console.error('Error saving updated office data to localStorage:', e);
+                        alert('Could not save updated work details.');
+                    }
+                }
+            });
+
+            // Auto-resize textarea height based on content
+            function autoResizeTextarea() {
+                detailsTextarea.style.height = 'auto';
+                detailsTextarea.style.height = detailsTextarea.scrollHeight + 'px';
+            }
+            detailsTextarea.addEventListener('input', autoResizeTextarea);
+            // Initial resize on display
+            setTimeout(autoResizeTextarea, 0);
+        }
+
         // Make sure other active display is hidden
-        if (activeTripInfoDiv) activeTripInfoDiv.style.display = 'none'; // Now this should work
-        activeOfficeInfoDiv.style.display = 'block'; // Show office info
+        if (activeTripInfoDiv) activeTripInfoDiv.style.display = 'none';
+        activeOfficeInfoDiv.style.display = 'block';
     } else {
         console.error('Could not find active office display elements.');
     }
