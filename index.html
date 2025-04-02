@@ -11,6 +11,18 @@
     <div class="container">
         <h1>Trip Tracker</h1>
 
+        <div class="user-vehicle-container">
+            <select id="userSelect">
+                <option value="">-- Select User --</option>
+                <option value="Jarrid">Jarrid</option>
+                <option value="Peter">Peter</option>
+                <option value="Roger">Roger</option>
+            </select>
+            <select id="vehicleSelect">
+                <option value="">-- Select Vehicle --</option>
+            </select>
+        </div>
+
         <div id="tripForm">
             <h2>New Trip</h2>
             <input type="number" id="startKmInput" placeholder="Start KM">
@@ -26,6 +38,7 @@
 
         <button class="btn" id="viewTripsBtn">View Trips</button>
         <button class="btn" id="manageCustomersBtn">Manage Customers</button>
+        <button class="btn" id="manageVehiclesBtn">Manage Vehicles</button>
         <button class="btn" id="importTripBtn">Import Trip from Google Maps</button>
 
     </div>

@@ -3,7 +3,7 @@ let allCustomers = [];
 let allTrips = []; // Needed for last visited date
 
 // --- IndexedDB Setup ---
-const request = indexedDB.open('TripTrackerDB', 1);
+const request = indexedDB.open('TripTrackerDB', 2);
 
 request.onupgradeneeded = (event) => {
     console.log('Customers: DB upgrade needed.');
@@ -16,6 +16,12 @@ request.onupgradeneeded = (event) => {
         // Add indexes if needed for searching later
         const customerStore = dbInstance.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
         customerStore.createIndex('name', 'name', { unique: false });
+    }
+    if (!dbInstance.objectStoreNames.contains('vehicles')) {
+        dbInstance.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
+    }
+    if (!dbInstance.objectStoreNames.contains('preferences')) {
+        dbInstance.createObjectStore('preferences', { keyPath: 'id' });
     }
 };
 

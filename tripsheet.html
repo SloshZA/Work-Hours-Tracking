@@ -18,12 +18,90 @@
             <select id="sortSelect">
                 <option value="date">Date (Newest First)</option>
                 <option value="customer">Customer (A-Z, Newest First)</option>
+                <option value="user">User (A-Z, Newest First)</option>
+                <option value="vehicle">Vehicle (A-Z, Newest First)</option>
             </select>
         </div>
 
         <div id="tripsListContainer" class="table-container">
             <!-- Trip table will be inserted here by tripsheet.js -->
             <p class="loading-message">Loading trips...</p>
+        </div>
+    </div>
+
+    <!-- Manage Action Modal (Hidden by default) -->
+    <div id="manageActionModal" class="modal modal-small">
+        <div class="modal-content">
+            <span class="close-btn" id="closeManageModalBtn">&times;</span>
+            <h2 id="manageModalTitle">Manage Trip</h2>
+            <!-- Hidden fields to store context -->
+            <input type="hidden" id="manageTripId">
+            <input type="hidden" id="manageTripDate">
+
+            <div class="modal-actions">
+                <button class="btn btn-edit" id="manageEditBtn">Edit Trip</button>
+                <button class="btn btn-delete" id="manageDeleteBtn">Delete Trip</button>
+                <button class="btn btn-cancel" id="manageCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Trip Modal (Hidden by default) -->
+    <div id="editTripModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeEditModalBtn">&times;</span>
+            <h2>Edit Trip</h2>
+            
+            <!-- Hidden input for trip ID -->
+            <input type="hidden" id="editTripId">
+            <input type="hidden" id="editTripDate">
+            <input type="hidden" id="editTripStartKm">
+            
+            <div class="form-group">
+                <label for="editUserSelect">User:</label>
+                <select id="editUserSelect">
+                    <option value="">-- Select User --</option>
+                    <option value="Jarrid">Jarrid</option>
+                    <option value="Peter">Peter</option>
+                    <option value="Roger">Roger</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editVehicleSelect">Vehicle:</label>
+                <select id="editVehicleSelect">
+                    <option value="">-- Select Vehicle --</option>
+                    <!-- Will be populated from database -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editEndKmInput">End KM:</label>
+                <input type="number" id="editEndKmInput" placeholder="End KM">
+            </div>
+
+            <div class="form-group">
+                <label for="editCustomerSelect">Customer:</label>
+                <select id="editCustomerSelect">
+                    <option value="">-- Select Customer --</option>
+                    <!-- Will be populated from database -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editPurposeInput">Purpose:</label>
+                <input type="text" id="editPurposeInput" placeholder="General purpose (e.g. Delivery, Meeting)">
+            </div>
+
+            <div class="form-group">
+                <label for="editWorkDetailsTextarea">Work Details:</label>
+                <textarea id="editWorkDetailsTextarea" rows="6" placeholder="Enter detailed work information"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn" id="saveTripEditBtn">Save Changes</button>
+                <button class="btn btn-cancel" id="cancelTripEditBtn">Cancel</button>
+            </div>
         </div>
     </div>
 

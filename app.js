@@ -1,6 +1,6 @@
 let db;
 
-const request = indexedDB.open('TripTrackerDB', 1);
+const request = indexedDB.open('TripTrackerDB', 2);
 
 request.onupgradeneeded = (event) => {
     console.log('App.js: DB upgrade needed.');
@@ -10,6 +10,12 @@ request.onupgradeneeded = (event) => {
     }
     if (!db.objectStoreNames.contains('customers')) {
         db.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
+    }
+    if (!db.objectStoreNames.contains('vehicles')) {
+        db.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
+    }
+    if (!db.objectStoreNames.contains('preferences')) {
+        db.createObjectStore('preferences', { keyPath: 'id' });
     }
 };
 
@@ -31,6 +37,14 @@ function saveTrip(trip, callback) {
         if (callback) callback(false);
         return;
     }
+    
+    // Save user and vehicle preferences
+    savePreference('lastUser', trip.user);
+    savePreference('lastVehicle', trip.vehicle);
+    
+    // Update vehicle's current KM
+    updateVehicleCurrentKm(trip.vehicle, trip.endKm);
+    
     let transaction;
     try {
         transaction = db.transaction(['trips'], 'readwrite');
@@ -119,6 +133,62 @@ function getCustomers(callback) {
     };
 }
 
+function getVehicles(callback) {
+    if (!db) {
+        console.error('Database not initialized.');
+        alert('Database error. Cannot get vehicles.');
+        return;
+    }
+    const transaction = db.transaction(['vehicles'], 'readonly');
+    const store = transaction.objectStore('vehicles');
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+        callback(request.result);
+    };
+    request.onerror = (event) => {
+        console.error('Error getting vehicles:', event.target.error);
+        callback([]); // Return empty array on error
+    };
+}
+
+function savePreference(key, value) {
+    if (!db) {
+        console.error('Database not initialized.');
+        return;
+    }
+    const transaction = db.transaction(['preferences'], 'readwrite');
+    const store = transaction.objectStore('preferences');
+    
+    const preference = {
+        id: key,
+        value: value
+    };
+    
+    store.put(preference);
+}
+
+function getPreference(key, callback) {
+    if (!db) {
+        console.error('Database not initialized.');
+        if (callback) callback(null);
+        return;
+    }
+    
+    const transaction = db.transaction(['preferences'], 'readonly');
+    const store = transaction.objectStore('preferences');
+    const request = store.get(key);
+    
+    request.onsuccess = () => {
+        const result = request.result ? request.result.value : null;
+        if (callback) callback(result);
+    };
+    
+    request.onerror = () => {
+        if (callback) callback(null);
+    };
+}
+
 // --- New Function: Populate Customer Dropdown ---
 function populateCustomerDropdown(customers) {
     const selectElement = document.getElementById('customerSelect');
@@ -138,28 +208,93 @@ function populateCustomerDropdown(customers) {
     console.log('App.js: Customer dropdown populated.');
 }
 
+// --- New Function: Populate Vehicle Dropdown ---
+function populateVehicleDropdown(vehicles) {
+    const selectElement = document.getElementById('vehicleSelect');
+    // Clear existing options except the default
+    selectElement.innerHTML = '<option value="">-- Select Vehicle --</option>';
+
+    if (vehicles && vehicles.length > 0) {
+        vehicles.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+        vehicles.forEach(vehicle => {
+            const option = document.createElement('option');
+            option.value = vehicle.name; // Use name as value for simplicity
+            option.textContent = vehicle.name;
+            // Store the current KM as a data attribute
+            option.dataset.currentKm = vehicle.currentKm || '';
+            selectElement.appendChild(option);
+        });
+    }
+    console.log('App.js: Vehicle dropdown populated.');
+    
+    // Select last used vehicle
+    getPreference('lastVehicle', (lastVehicle) => {
+        if (lastVehicle && selectElement.querySelector(`option[value="${lastVehicle}"]`)) {
+            selectElement.value = lastVehicle;
+            // We'll let the user manually click the dropdown instead of auto-populating
+            // This ensures the startKm field stays empty on page refresh
+        }
+    });
+}
+
 // Function to initialize UI elements and add event listeners
 function initializeUI() {
     const startKmInput = document.getElementById('startKmInput');
     const endKmInput = document.getElementById('endKmInput');
+    const userSelect = document.getElementById('userSelect');
+    const vehicleSelect = document.getElementById('vehicleSelect');
     const customerSelect = document.getElementById('customerSelect');
     const purposeInput = document.getElementById('purposeInput');
     const saveTripBtn = document.getElementById('saveTripBtn');
     const viewTripsBtn = document.getElementById('viewTripsBtn');
     const manageCustomersBtn = document.getElementById('manageCustomersBtn');
+    const manageVehiclesBtn = document.getElementById('manageVehiclesBtn');
     const importTripBtn = document.getElementById('importTripBtn');
 
-    // --- Populate dropdown on load ---
+    // Clear input fields on page load
+    startKmInput.value = '';
+    endKmInput.value = '';
+    purposeInput.value = '';
+
+    // --- Populate dropdowns on load ---
     getCustomers(populateCustomerDropdown);
+    getVehicles(populateVehicleDropdown);
+    
+    // Select last used user
+    getPreference('lastUser', (lastUser) => {
+        if (lastUser && userSelect.querySelector(`option[value="${lastUser}"]`)) {
+            userSelect.value = lastUser;
+        }
+    });
+    
+    // Add event listener for vehicle selection to populate start KM
+    vehicleSelect.addEventListener('change', () => {
+        const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
+        if (selectedOption && selectedOption.dataset.currentKm) {
+            startKmInput.value = selectedOption.dataset.currentKm;
+        }
+    });
 
     saveTripBtn.addEventListener('click', () => {
         const startKm = startKmInput.value;
         const endKm = endKmInput.value;
+        const user = userSelect.value;
+        const vehicle = vehicleSelect.value;
         const customer = customerSelect.value;
         const purpose = purposeInput.value.trim();
 
         if (!customer) {
             alert('Please select a customer.');
+            return;
+        }
+        
+        if (!user) {
+            alert('Please select a user.');
+            return;
+        }
+        
+        if (!vehicle) {
+            alert('Please select a vehicle.');
             return;
         }
 
@@ -176,6 +311,8 @@ function initializeUI() {
             const trip = {
                 startKm: parseInt(startKm),
                 endKm: parseInt(endKm),
+                user,
+                vehicle,
                 customer,
                 purpose,
                 date: new Date().toISOString()
@@ -185,8 +322,10 @@ function initializeUI() {
                     alert('Trip saved successfully!');
                     startKmInput.value = '';
                     endKmInput.value = '';
-                    customerSelect.value = '';
                     purposeInput.value = '';
+
+                    // Refresh the vehicle dropdown to get updated KM values
+                    getVehicles(populateVehicleDropdown);
 
                     console.log('App.js: Attempting to read trips immediately after save...');
                     getTrips((trips) => {
@@ -199,7 +338,7 @@ function initializeUI() {
             });
         } else {
             if (!startKm || !endKm || !purpose) {
-                alert('All fields except customer selection are required.');
+                alert('All fields are required.');
             }
         }
     });
@@ -211,6 +350,11 @@ function initializeUI() {
     manageCustomersBtn.addEventListener('click', () => {
         // Navigate to the new customers page
         window.location.href = 'customers.html';
+    });
+    
+    manageVehiclesBtn.addEventListener('click', () => {
+        // Navigate to the vehicles page
+        window.location.href = 'vehicles.html';
     });
 
     importTripBtn.addEventListener('click', () => {
@@ -230,4 +374,33 @@ function initializeUI() {
             alert('Start and end dates are required.');
         }
     });
+}
+
+// Function to update vehicle's current KM
+function updateVehicleCurrentKm(vehicleName, endKm) {
+    if (!db || !vehicleName || !endKm) return;
+    
+    // First get all vehicles to find the matching one
+    const transaction = db.transaction(['vehicles'], 'readonly');
+    const store = transaction.objectStore('vehicles');
+    const request = store.getAll();
+    
+    request.onsuccess = () => {
+        const vehicles = request.result;
+        if (!vehicles || !vehicles.length) return;
+        
+        // Find the vehicle with matching name
+        const vehicle = vehicles.find(v => v.name === vehicleName);
+        if (!vehicle) return;
+        
+        // Update the vehicle's current KM
+        vehicle.currentKm = parseInt(endKm);
+        
+        // Save the updated vehicle
+        const updateTransaction = db.transaction(['vehicles'], 'readwrite');
+        const updateStore = updateTransaction.objectStore('vehicles');
+        updateStore.put(vehicle);
+        
+        console.log(`Updated vehicle ${vehicleName} current KM to ${endKm}`);
+    };
 }

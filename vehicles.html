@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Vehicles - Trip Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container vehicles-container">
+        <h1>Manage Vehicles</h1>
+        <div class="page-controls">
+            <a href="index.html" class="btn back-btn">Back to Main</a>
+            <button class="btn add-vehicle-btn" id="addVehicleBtn">Add New Vehicle</button>
+        </div>
+
+        <div id="vehiclesListContainer" class="table-container">
+            <p class="loading-message">Loading vehicles...</p>
+        </div>
+
+        <!-- Add/Edit Vehicle Modal (Hidden by default) -->
+        <div id="vehicleModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="closeModalBtn">&times;</span>
+                <h2 id="modalTitle">Add New Vehicle</h2>
+                <!-- Hidden input to store vehicle ID during edit -->
+                <input type="hidden" id="vehicleId">
+
+                <input type="text" id="vehicleName" placeholder="Vehicle Name / Description" required>
+                <input type="text" id="licensePlate" placeholder="License Plate Number" required>
+                <input type="number" id="currentKm" placeholder="Current KM" required>
+
+                <button class="btn" id="saveVehicleBtn">Save Vehicle</button>
+            </div>
+        </div>
+
+        <!-- Manage Action Modal (Hidden by default) -->
+        <div id="manageActionModal" class="modal modal-small">
+            <div class="modal-content">
+                <span class="close-btn" id="closeManageModalBtn">&times;</span>
+                <h2 id="manageModalTitle">Manage Vehicle</h2>
+                <!-- Hidden fields to store context -->
+                <input type="hidden" id="manageVehicleId">
+                <input type="hidden" id="manageVehicleName">
+
+                <div class="modal-actions">
+                    <button class="btn btn-edit" id="manageEditBtn">Edit Vehicle</button>
+                    <button class="btn btn-delete" id="manageDeleteBtn">Delete Vehicle</button>
+                    <button class="btn btn-cancel" id="manageCancelBtn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="vehicles.js"></script>
+</body>
+</html> 
