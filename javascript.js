@@ -535,6 +535,7 @@ function setupEventListeners() {
     const viewTripsBtn = document.getElementById('viewTripsBtn');
     const manageCustomersBtn = document.getElementById('manageCustomersBtn');
     const manageVehiclesBtn = document.getElementById('manageVehiclesBtn');
+    const manageDataBtn = document.getElementById('manageDataBtn'); // Get the new button
     const completeTripBtnOnPage = document.getElementById('completeTripBtn'); // Renamed variable
 
     if (startTripBtn) {
@@ -615,6 +616,15 @@ function setupEventListeners() {
         });
     } else {
         console.warn('manageVehiclesBtn not found');
+    }
+
+    // --- Data Management Button Listener ---
+    if (manageDataBtn) {
+        manageDataBtn.addEventListener('click', () => {
+            window.location.href = 'datamanagement.html'; // Navigate to the new page
+        });
+    } else {
+        console.warn('manageDataBtn not found');
     }
 
     // Add listener for import button if it exists and is needed

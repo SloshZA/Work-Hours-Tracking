@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Management - SC Cargo Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Data Management</h1>
+            <nav>
+                <a href="index.html" class="btn btn-nav">Back to Main</a>
+            </nav>
+        </header>
+
+        <main>
+            <section id="trips-management" class="data-section">
+                <h2>Trips</h2>
+                <div class="action-buttons">
+                    <button id="exportTripsBtn" class="btn btn-export">Export Trips (CSV)</button>
+                    <label for="importTripsFile" class="btn btn-import">Import Trips (CSV)</label>
+                    <input type="file" id="importTripsFile" accept=".csv" style="display: none;">
+                </div>
+            </section>
+
+            <section id="customers-management" class="data-section">
+                <h2>Customers</h2>
+                <div class="action-buttons">
+                    <button id="exportCustomersBtn" class="btn btn-export">Export Customers (CSV)</button>
+                    <label for="importCustomersFile" class="btn btn-import">Import Customers (CSV)</label>
+                    <input type="file" id="importCustomersFile" accept=".csv" style="display: none;">
+                </div>
+            </section>
+
+            <section id="vehicles-management" class="data-section">
+                <h2>Vehicles</h2>
+                <div class="action-buttons">
+                    <button id="exportVehiclesBtn" class="btn btn-export">Export Vehicles (CSV)</button>
+                    <label for="importVehiclesFile" class="btn btn-import">Import Vehicles (CSV)</label>
+                    <input type="file" id="importVehiclesFile" accept=".csv" style="display: none;">
+                </div>
+            </section>
+
+            <div id="statusMessages"></div> <!-- For showing import/export status -->
+        </main>
+
+        <footer>
+            <!-- Footer content if any -->
+        </footer>
+    </div>
+
+    <!-- Include PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="datamanagement.js"></script>
+</body>
+</html> 
