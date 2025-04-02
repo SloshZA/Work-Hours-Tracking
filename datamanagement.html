@@ -55,6 +55,20 @@
             <div id="statusMessages"></div> <!-- For showing import/export status -->
         </main>
 
+        <!-- Confirmation Modal for Clearing Database -->
+        <div id="confirmClearModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="closeConfirmClearModalBtn">&times;</span>
+                <h2>Confirm Database Deletion</h2>
+                <p><strong>WARNING:</strong> This will permanently delete ALL data (Trips, Customers, Vehicles, etc.) from the application's storage (IndexedDB and LocalStorage).</p>
+                <p>This action cannot be undone. Are you absolutely sure you want to proceed?</p>
+                <div class="modal-actions">
+                    <button id="confirmClearYesBtn" class="btn btn-danger">Yes, Clear Everything</button>
+                    <button id="confirmClearNoBtn" class="btn btn-secondary">No, Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <footer>
             <!-- Footer content if any -->
         </footer>

@@ -308,28 +308,54 @@ function setupEventListeners() {
          event.target.value = null; // Reset file input
     });
 
-    // Clear Database Button
-    document.getElementById('clearDatabaseBtn')?.addEventListener('click', clearEntireDatabase);
+    // Clear Database Button - Now opens the modal
+    document.getElementById('clearDatabaseBtn')?.addEventListener('click', openClearConfirmationModal);
+
+    // Modal Buttons
+    document.getElementById('confirmClearYesBtn')?.addEventListener('click', handleConfirmClearYes);
+    document.getElementById('confirmClearNoBtn')?.addEventListener('click', closeClearConfirmationModal);
+    document.getElementById('closeConfirmClearModalBtn')?.addEventListener('click', closeClearConfirmationModal);
+
+    // Close modal if clicked outside
+    const confirmModal = document.getElementById('confirmClearModal');
+    if (confirmModal) {
+        window.addEventListener('click', (event) => {
+            if (event.target === confirmModal) {
+                closeClearConfirmationModal();
+            }
+        });
+    }
 }
 
-// --- Database Clearing Function ---
-function clearEntireDatabase() {
+// --- Modal Handling Functions ---
+function openClearConfirmationModal() {
+    const modal = document.getElementById('confirmClearModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+function closeClearConfirmationModal() {
+    const modal = document.getElementById('confirmClearModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function handleConfirmClearYes() {
+    closeClearConfirmationModal(); // Close the modal first
+    performDatabaseClear(); // Call the actual clearing function
+}
+
+
+// --- Database Clearing Function (Actual Logic) ---
+function performDatabaseClear() {
     if (!db) {
         displayStatusMessage('Database not available.', 'error');
         return;
     }
 
-    // Confirmation dialog
-    if (!confirm('WARNING: This will permanently delete ALL data (Trips, Customers, Vehicles) from the database. This action cannot be undone. Are you absolutely sure?')) {
-        displayStatusMessage('Database clearing cancelled.', 'info');
-        return;
-    }
-
-    // Double confirmation for safety
-    if (!confirm('SECOND WARNING: Please confirm again that you want to erase all data.')) {
-        displayStatusMessage('Database clearing cancelled.', 'info');
-        return;
-    }
+    // No more confirm() dialogs needed here
 
     displayStatusMessage('Attempting to clear database...', 'info');
 
@@ -383,4 +409,11 @@ function clearEntireDatabase() {
         console.error('Error initiating database clearing:', error);
         displayStatusMessage(`An unexpected error occurred while trying to clear the database: ${error.message}`, 'error');
     }
-} 
+}
+
+// --- Deprecated function (original with confirm()) - Can be removed or kept for reference ---
+/*
+function clearEntireDatabase() {
+    // ... original code with confirm() ...
+}
+*/ 
