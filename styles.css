@@ -127,7 +127,7 @@ th, td {
     text-align: left;
     border-bottom: 1px solid #444;
     color: #ffffff;
-    font-size: 10px;
+    font-size: 9px;
     white-space: nowrap;
 }
 
@@ -137,7 +137,7 @@ th {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 tr:last-child td {
