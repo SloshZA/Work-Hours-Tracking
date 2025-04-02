@@ -309,7 +309,16 @@ function setupEventListeners() {
     });
 
     // Clear Database Button - Now opens the modal
-    document.getElementById('clearDatabaseBtn')?.addEventListener('click', openClearConfirmationModal);
+    const clearDbBtn = document.getElementById('clearDatabaseBtn');
+    if (clearDbBtn) {
+        console.log('Attaching listener to clearDatabaseBtn'); // Check if this logs
+        clearDbBtn.addEventListener('click', () => {
+            console.log('clearDatabaseBtn clicked!'); // Check if this logs on mobile tap
+            openClearConfirmationModal();
+        });
+    } else {
+        console.error('clearDatabaseBtn not found!'); // Check if this logs
+    }
 
     // Modal Buttons
     document.getElementById('confirmClearYesBtn')?.addEventListener('click', handleConfirmClearYes);
@@ -329,9 +338,14 @@ function setupEventListeners() {
 
 // --- Modal Handling Functions ---
 function openClearConfirmationModal() {
+    console.log('openClearConfirmationModal called'); // Check if this logs
     const modal = document.getElementById('confirmClearModal');
     if (modal) {
+        console.log('Modal element found, setting display to block'); // Check if this logs
         modal.style.display = 'block';
+        console.log('Modal display style set to:', modal.style.display); // Verify
+    } else {
+        console.error('confirmClearModal element NOT found!'); // Check if this logs
     }
 }
 
