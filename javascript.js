@@ -35,6 +35,16 @@ const officeWorkDetails = document.getElementById('officeWorkDetails');
 const saveOfficeEntryBtn = document.getElementById('saveOfficeEntryBtn');
 const officePurposeInput = document.getElementById('officePurpose'); // Add purpose input
 
+// --- NEW: Work Reminder Modal Elements ---
+const workReminderModal = document.getElementById('workReminderModal');
+const closeReminderModalBtn = document.getElementById('closeReminderModalBtn');
+const workReminderForm = document.getElementById('workReminderForm');
+const reminderCustomerSelect = document.getElementById('reminderCustomerSelect');
+const reminderPurposeInput = document.getElementById('reminderPurposeInput');
+const reminderDateInput = document.getElementById('reminderDateInput');
+const saveReminderBtn = document.getElementById('saveReminderBtn'); // Optional, if needed later
+const workReminderBtn = document.getElementById('workReminderBtn'); // The button that opens the modal
+
 // --- References for Active Displays ---
 const activeTripInfoDiv = document.getElementById('activeTripInfo');
 const activeTripDetailsDiv = document.getElementById('activeTripDetails');
@@ -48,7 +58,7 @@ const editTripBtn = document.getElementById('editTripBtn'); // Add reference for
 const deleteOfficeWorkBtn = document.getElementById('deleteOfficeWorkBtn');
 const deleteTripBtn = document.getElementById('deleteTripBtn');
 
-const request = indexedDB.open('TripTrackerDB', 3);
+const request = indexedDB.open('TripTrackerDB', 4);
 
 request.onupgradeneeded = (event) => {
     db = event.target.result;
@@ -84,6 +94,14 @@ request.onupgradeneeded = (event) => {
     if (!db.objectStoreNames.contains('preferences')) {
         console.log('Creating preferences store');
         db.createObjectStore('preferences', { keyPath: 'id' });
+    }
+    // --- Add reminders store if not already present ---
+    if (!db.objectStoreNames.contains('reminders')) {
+        console.log('Creating reminders store');
+        const reminderStore = db.createObjectStore('reminders', { keyPath: 'id', autoIncrement: true });
+        // Optional: Add indexes if needed for querying later (e.g., by date)
+        // reminderStore.createIndex('reminderDate', 'reminderDate', { unique: false });
+        // reminderStore.createIndex('customer', 'customer', { unique: false });
     }
 };
 
@@ -894,8 +912,14 @@ function setupEventListeners() {
     const manageCustomersBtn = document.getElementById('manageCustomersBtn');
     const manageVehiclesBtn = document.getElementById('manageVehiclesBtn');
     const manageDataBtn = document.getElementById('manageDataBtn');
+    const workScheduleBtn = document.getElementById('workScheduleBtn'); // <-- Get the new button
     const completeTripBtnOnPage = document.getElementById('completeTripBtn'); // Travel complete
     const editTripBtnOnPage = document.getElementById('editTripBtn'); // Travel edit button
+    const workReminderBtn = document.getElementById('workReminderBtn'); // Get the reminder button
+    const closeReminderModalBtn = document.getElementById('closeReminderModalBtn'); // Get the reminder close button
+    const workReminderForm = document.getElementById('workReminderForm'); // Get the reminder form
+
+    console.log('Work Reminder Button Element:', workReminderBtn);
 
     // --- MODIFIED: Main Start Button checks for *any* active activity ---
     if (startNewActivityBtn) {
@@ -978,6 +1002,9 @@ function setupEventListeners() {
         if (event.target === officeEntryModal) {
             closeOfficeEntryModal();
         }
+        if (event.target === workReminderModal) { // <-- ADD THIS CHECK
+            closeWorkReminderModal();
+        }
     });
 
     // Navigation Button Listeners - No change
@@ -986,6 +1013,15 @@ function setupEventListeners() {
             window.location.href = 'tripsheet.html';
             });
     }
+    // --- NEW: Work Schedule Button Listener ---
+    if (workScheduleBtn) {
+        workScheduleBtn.addEventListener('click', () => {
+            window.location.href = 'Work_Schedule.html'; // Navigate to the new page
+        });
+    } else {
+        console.warn('Button with ID "workScheduleBtn" not found');
+    }
+    // --- End New Listener ---
     if (manageCustomersBtn) {
         manageCustomersBtn.addEventListener('click', () => {
             window.location.href = 'customers.html';
@@ -1021,6 +1057,65 @@ function setupEventListeners() {
         editTripBtnOnPage.addEventListener('click', handleEditTripTask);
     } else {
         console.warn('Button with ID "editTripBtn" not found');
+    }
+
+    // --- NEW: Work Reminder Button Listener ---
+    if (workReminderBtn) {
+        console.log('Attaching click listener to Work Reminder Button');
+        workReminderBtn.addEventListener('click', openWorkReminderModal);
+    } else {
+        console.warn('Button with ID "workReminderBtn" not found');
+    }
+
+    // --- NEW: Work Reminder Modal Close Button Listener ---
+    if (closeReminderModalBtn) {
+        console.log('Attaching click listener to Work Reminder Close Button'); // Add log
+        closeReminderModalBtn.addEventListener('click', closeWorkReminderModal);
+    } else {
+        console.warn('Button with ID "closeReminderModalBtn" not found');
+    }
+
+    // --- NEW: Work Reminder Form Submit Listener (IMPLEMENTED) ---
+    const reminderTypeSelect = document.getElementById('reminderType'); // Get the type dropdown
+
+    if (workReminderForm) {
+        console.log('Attaching submit listener to Work Reminder Form');
+        workReminderForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent actual form submission
+            console.log('Work Reminder form submitted');
+
+            const type = reminderTypeSelect.value; // Get the selected type
+            const customer = reminderCustomerSelect.value;
+            const purpose = reminderPurposeInput.value.trim();
+            const reminderDate = reminderDateInput.value; // Format YYYY-MM-DD
+
+            if (!type || !customer || !purpose || !reminderDate) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const reminderData = {
+                type: type, // Add the type to the reminder data
+                customer: customer,
+                purpose: purpose,
+                reminderDate: reminderDate,
+                createdAt: new Date().toISOString(), // Optional: track when it was created
+                status: 'pending' // Optional: track status (pending, done, etc.)
+            };
+
+            console.log('Attempting to save reminder:', reminderData);
+
+            saveReminder(reminderData, (success) => {
+                if (success) {
+                    alert('Work reminder saved successfully!');
+                    closeWorkReminderModal(); // Close modal after successful save
+                } else {
+                    alert('Failed to save work reminder. Please try again.');
+                }
+            });
+        });
+    } else {
+        console.warn('Form with ID "workReminderForm" not found');
     }
 }
 
@@ -1136,4 +1231,134 @@ function handleEditTripTask() {
     }
     console.log('Editing active trip:', activeActivityData);
     openStartTripModal(true); // Open modal in editing mode
+}
+
+// --- NEW: Work Reminder Modal Functions (Moved Earlier) ---
+function openWorkReminderModal() {
+    console.log('openWorkReminderModal function called');
+    if (workReminderModal) {
+        // Clear previous values
+        reminderPurposeInput.value = '';
+        reminderDateInput.value = ''; // Clear date
+
+        // Populate customers and then display
+        populateCustomerDropdown('reminderCustomerSelect', () => {
+            reminderCustomerSelect.value = ''; // Ensure default is selected
+            console.log('Setting workReminderModal display to block');
+            workReminderModal.style.display = 'block';
+            console.log('Work Reminder modal opened.');
+        });
+    } else {
+        console.error('Work Reminder modal element not found.');
+    }
+}
+
+function closeWorkReminderModal() {
+    if (workReminderModal) {
+        console.log('Closing Work Reminder modal'); // Add log
+        workReminderModal.style.display = 'none';
+    }
+}
+
+// --- Function to save a reminder ---
+function saveReminder(reminderData, callback) {
+    if (!db) {
+        console.error('DB not available to save reminder');
+        if (callback) callback(false);
+        return;
+    }
+    const transaction = db.transaction(['reminders'], 'readwrite');
+    const store = transaction.objectStore('reminders');
+    const request = store.add(reminderData);
+
+    request.onsuccess = () => {
+        console.log('Reminder saved successfully to DB:', reminderData);
+        if (callback) callback(true, request.result);
+    };
+
+    request.onerror = (event) => {
+        console.error('Error saving reminder to DB:', event.target.error);
+        if (callback) callback(false);
+    };
+}
+
+function getRemindersFromDB(callback) {
+    if (!db) {
+        console.error('DB not available to fetch reminders');
+        callback([]);
+        return;
+    }
+    const transaction = db.transaction(['reminders'], 'readonly');
+    const store = transaction.objectStore('reminders');
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+        const reminders = request.result || [];
+        console.log('Fetched reminders from DB:', reminders);
+        reminders.sort((a, b) => (a.reminderDate || '').localeCompare(b.reminderDate || ''));
+        callback(reminders);
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching reminders from DB:', event.target.error);
+        callback([]);
+    };
+}
+
+function setReminderAsActive(reminderId) {
+    if (!db) {
+        console.error('DB not available to fetch reminder');
+        return;
+    }
+
+    const transaction = db.transaction(['reminders'], 'readonly');
+    const store = transaction.objectStore('reminders');
+    const request = store.get(Number(reminderId));
+
+    request.onsuccess = () => {
+        const reminder = request.result;
+        if (!reminder) {
+            alert('Reminder not found.');
+            return;
+        }
+
+        // Set the reminder as the active task
+        const activeTask = {
+            type: reminder.type,
+            customer: reminder.customer,
+            purpose: reminder.purpose,
+            startTime: new Date().toISOString(),
+            status: 'active',
+            reminderId: reminder.id // Optional: Track the reminder ID
+        };
+
+        activeActivityData = activeTask;
+        try {
+            localStorage.setItem(ACTIVE_ACTIVITY_KEY, JSON.stringify(activeActivityData));
+            console.log('Reminder set as active:', activeTask);
+
+            // Update the UI to show the active task
+            if (activeTask.type === 'travel') {
+                displayActiveTripInfo(activeTask);
+            } else if (activeTask.type === 'office') {
+                displayActiveOfficeInfo(activeTask);
+            }
+
+            // Hide the "Start New Activity" button
+            const startActivityButton = document.getElementById('saveTripBtn');
+            if (startActivityButton) {
+                startActivityButton.style.display = 'none';
+            }
+
+            alert('Task set as active. You can now start working on it.');
+        } catch (e) {
+            console.error('Error setting reminder as active:', e);
+            alert('Failed to set task as active. Please try again.');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching reminder:', event.target.error);
+        alert('Failed to fetch reminder. Please try again.');
+    };
 }

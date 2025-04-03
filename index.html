@@ -50,12 +50,14 @@
 
         <div id="tripForm">
             <button class="btn" id="saveTripBtn">Start New Activity</button>
+            <button class="btn" id="workReminderBtn">Work Reminder</button>
         </div>
 
         <hr>
 
         <button class="btn" id="viewTripsBtn">View Work & Trip History</button>
-        <button class="btn" id="manageCustomersBtn">Manage Customers</button>
+        <button id="workScheduleBtn" class="btn">Work Schedule</button>
+        <button id="manageCustomersBtn" class="btn">Manage Customers</button>
         <button class="btn" id="manageVehiclesBtn">Manage Vehicles</button>
         <button class="btn" id="importTripBtn">Import Trip from Google Maps</button>
         <button id="manageDataBtn" class="btn">Data Management</button>
@@ -145,6 +147,37 @@
                 <div class="modal-actions">
                     <button type="submit" id="saveOfficeEntryBtn" class="btn btn-primary">Start Work</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Work Reminder Modal -->
+    <div id="workReminderModal" class="modal">
+        <div class="modal-content">
+            <span id="closeReminderModalBtn" class="close">&times;</span>
+            <h2>Add Work Reminder</h2>
+            <form id="workReminderForm">
+                <div class="form-group">
+                    <label for="reminderType">Type:</label>
+                    <select id="reminderType" required>
+                        <option value="">-- Select Type --</option>
+                        <option value="trip">Trip</option>
+                        <option value="office">Office Order</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reminderCustomerSelect">Customer:</label>
+                    <select id="reminderCustomerSelect" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="reminderPurposeInput">Purpose:</label>
+                    <input type="text" id="reminderPurposeInput" required>
+                </div>
+                <div class="form-group">
+                    <label for="reminderDateInput">Date:</label>
+                    <input type="date" id="reminderDateInput" required>
+                </div>
+                <button type="submit" class="btn">Save Reminder</button>
             </form>
         </div>
     </div>
