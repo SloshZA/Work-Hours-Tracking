@@ -1,6 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     const backBtn = document.getElementById('backBtn');
     const remindersListContainer = document.getElementById('reminders-list');
+    // --- NEW: Get references to the custom modal elements ---
+    const activityInProgressModal = document.getElementById('activityInProgressModal');
+    const closeActivityModalBtn = document.getElementById('closeActivityModalBtn');
+    const okActivityModalBtn = document.getElementById('okActivityModalBtn');
+    // --- End NEW ---
 
     if (backBtn) {
         backBtn.addEventListener('click', () => {
@@ -174,6 +179,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Define the ACTIVE_ACTIVITY_KEY constant
     const ACTIVE_ACTIVITY_KEY = 'activeActivityData';
 
+    // --- NEW: Functions to control the custom modal ---
+    function openActivityInProgressModal() {
+        if (activityInProgressModal) {
+            activityInProgressModal.style.display = 'block';
+        }
+    }
+
+    function closeActivityInProgressModal() {
+        if (activityInProgressModal) {
+            activityInProgressModal.style.display = 'none';
+        }
+    }
+    // --- End NEW ---
+
     function setReminderAsActive(reminderId) {
         if (!db) {
             console.error('DB not available to fetch reminder');
@@ -183,7 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check if there is already an active activity
         const storedActivity = localStorage.getItem(ACTIVE_ACTIVITY_KEY);
         if (storedActivity) {
-            alert('An activity (Travel or Office Work) is already in progress. Please complete it first.');
+            // --- MODIFIED: Show custom modal instead of alert ---
+            openActivityInProgressModal();
+            // alert('An activity (Travel or Office Work) is already in progress. Please complete it first.');
+            // --- End MODIFIED ---
             return; // Exit the function if there is an active activity
         }
 
@@ -239,4 +261,22 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Failed to fetch reminder. Please try again.');
         };
     }
+
+    // --- NEW: Add event listeners for the custom modal ---
+    if (closeActivityModalBtn) {
+        closeActivityModalBtn.addEventListener('click', closeActivityInProgressModal);
+    }
+    if (okActivityModalBtn) {
+        okActivityModalBtn.addEventListener('click', closeActivityInProgressModal);
+    }
+    // Optional: Close modal if clicking outside the content area
+    window.addEventListener('click', (event) => {
+        if (event.target === activityInProgressModal) {
+            closeActivityInProgressModal();
+        }
+    });
+    // --- End NEW ---
+
+    // Initial load
+    // ... (request.onsuccess calls loadAndDisplayReminders) ...
 }); 

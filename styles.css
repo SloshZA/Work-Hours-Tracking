@@ -272,7 +272,7 @@ body > .container {
     color: #ffffff;
 }
 
-/* Modal Styles */
+/* General Modal Styles (if not already defined) */
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -282,45 +282,52 @@ body > .container {
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+    background-color: rgba(0,0,0,0.5); /* Black w/ opacity (overlay) */
 }
 
 .modal-content {
     background-color: #2c2c2c;
-    color: #ffffff;
-    margin: 15% auto;
+    margin: 15% auto; /* 15% from the top and centered */
     padding: 25px;
-    border: 1px solid #555;
-    width: 80%;
-    max-width: 500px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 450px; /* Maximum width */
     border-radius: 8px;
-    position: relative;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    text-align: center;
+    position: relative; /* For positioning the close button */
 }
 
+/* Close Button Style */
 .close-btn {
     color: #aaa;
-    position: absolute;
+    position: absolute; /* Position relative to modal-content */
     top: 10px;
-    right: 20px;
+    right: 15px;
     font-size: 28px;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .close-btn:hover,
 .close-btn:focus {
-    color: #ffffff;
+    color: black;
     text-decoration: none;
+}
+
+/* OK Button Style (Optional - Reuse existing .btn or customize) */
+#okActivityModalBtn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #007bff; /* Example blue */
+    color: white;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
 }
 
-.modal-actions {
-    margin-top: 20px;
-    text-align: right;
-}
-
-.modal-actions button {
-    margin-left: 10px;
+#okActivityModalBtn:hover {
+    background-color: #0056b3;
 }
 
 /* Add styles for btn-secondary if you don't have them */
