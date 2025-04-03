@@ -968,3 +968,32 @@ input:focus, select:focus, textarea:focus {
     border-color: #00ff88;
     background-color: #444; /* Darker background when focused */
 }
+
+/* Container for office action buttons */
+.active-office-actions {
+    display: flex;           /* Makes children (buttons) display in a row */
+    flex-direction: row;     /* Explicitly set to row (default, but makes it clear) */
+    gap: 10px;               /* Space between buttons */
+    margin-top: 15px;        /* Space above the button row */
+    flex-wrap: wrap;         /* Allow buttons to wrap on very small screens */
+}
+
+/* Style for buttons in the action container */
+.active-office-actions button {
+    flex: 1;                 /* Make buttons take equal width */
+    min-width: 80px;         /* Ensure buttons don't get too narrow */
+    white-space: nowrap;     /* Prevent text from wrapping within buttons */
+}
+
+/* Optional: Button color variations */
+.btn-secondary {
+    background-color: #6c757d;
+}
+
+.btn-complete {
+    background-color: #28a745;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}

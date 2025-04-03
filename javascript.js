@@ -43,6 +43,10 @@ const activeOfficeDetailsDiv = document.getElementById('activeOfficeDetails');
 const editOfficeWorkBtn = document.getElementById('editOfficeWorkBtn');
 const completeOfficeWorkBtn = document.getElementById('completeOfficeWorkBtn');
 
+// At the top of the file where other elements are defined
+const deleteOfficeWorkBtn = document.getElementById('deleteOfficeWorkBtn');
+const deleteTripBtn = document.getElementById('deleteTripBtn');
+
 const request = indexedDB.open('TripTrackerDB', 3);
 
 request.onupgradeneeded = (event) => {
@@ -355,11 +359,16 @@ function openStartTripModal() {
     modalVehicleDisplay.textContent = vehicleName;
     modalStartKmInput.value = currentKm;
     modalPurposeInput.value = ''; // Clear previous purpose
+    
+    // Populate customers AND display modal in the callback
     populateCustomerDropdown('modalCustomer', () => {
-        // This callback is empty as the populateCustomerDropdown function now handles the callback
+        // This callback runs AFTER the dropdown is populated
+        startTripModal.style.display = 'block'; // Display modal now
+        console.log('Start trip modal displayed after customer population.');
     }); // Populate customers
 
-    startTripModal.style.display = 'block';
+    // REMOVED: startTripModal.style.display = 'block'; 
+    // Moved inside the callback above to ensure population happens first.
 }
 
 function closeStartTripModal() {
@@ -736,9 +745,10 @@ function updateVehicleKm(vehicleName, newKm) {
 
 // --- Display Active Trip Info (Travel) ---
 function displayActiveTripInfo(trip) {
-    const completeBtn = document.getElementById('completeTripBtn'); // Get the button
+    const completeBtn = document.getElementById('completeTripBtn'); // Get the complete button
+    const deleteBtn = document.getElementById('deleteTripBtn');     // Get the delete button
 
-    if (activeTripInfoDiv && activeTripDetailsDiv && completeBtn) {
+    if (activeTripInfoDiv && activeTripDetailsDiv && completeBtn && deleteBtn) {
         activeTripDetailsDiv.innerHTML = `
             <div class="info-block"><strong>Start KM:</strong> ${trip.startKm}</div>
             <div class="info-block"><strong>Customer:</strong> ${trip.customer}</div>
@@ -747,9 +757,11 @@ function displayActiveTripInfo(trip) {
         // Make sure other active display is hidden
         if (activeOfficeInfoDiv) activeOfficeInfoDiv.style.display = 'none'; // Hide office info
         activeTripInfoDiv.style.display = 'block';
-        completeBtn.style.display = 'block'; // Make sure complete button is visible
+        
+        // No need to set display style here as the buttons are in a container
+        // that inherits visibility from activeTripInfoDiv
     } else {
-        console.error('Could not find active trip display elements or complete button.');
+        console.error('Could not find active trip display elements or buttons.');
     }
 }
 
@@ -917,6 +929,20 @@ function setupEventListeners() {
             window.location.href = 'datamanagement.html';
         });
     }
+
+    // Add a new function to handle deleting an office task
+    if (deleteOfficeWorkBtn) {
+        deleteOfficeWorkBtn.addEventListener('click', handleDeleteOfficeWork);
+    } else {
+        console.warn('Button with ID "deleteOfficeWorkBtn" not found');
+    }
+
+    // NEW: Add listener for the delete trip button
+    if (deleteTripBtn) {
+        deleteTripBtn.addEventListener('click', handleDeleteTripTask);
+    } else {
+        console.warn('Button with ID "deleteTripBtn" not found');
+    }
 }
 
 // --- Function to add default vehicle ---
@@ -963,4 +989,62 @@ function addDefaultVehicleIfNeeded() {
     transaction.onerror = (event) => {
         console.error('Transaction error while checking/adding default vehicle:', event.target.error);
     };
+}
+
+// Add a new function to handle deleting an office task
+function handleDeleteOfficeWork() {
+    if (!activeActivityData || activeActivityData.type !== 'office') {
+        alert('No active office work found to delete.');
+        return;
+    }
+
+    // Confirm deletion
+    if (confirm('Are you sure you want to delete this office task? This action cannot be undone.')) {
+        console.log('Deleting office task:', activeActivityData);
+        
+        // Clear the active activity data
+        activeActivityData = null;
+        localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
+        
+        // Update UI
+        if (activeOfficeInfoDiv) {
+            activeOfficeInfoDiv.style.display = 'none';
+        }
+        
+        const startActivityButton = document.getElementById('saveTripBtn');
+        if (startActivityButton) {
+            startActivityButton.style.display = 'block';
+        }
+        
+        alert('Office task deleted');
+    }
+}
+
+// Add a new function to handle deleting a trip task
+function handleDeleteTripTask() {
+    if (!activeActivityData || activeActivityData.type !== 'travel') {
+        alert('No active trip found to delete.');
+        return;
+    }
+
+    // Confirm deletion
+    if (confirm('Are you sure you want to delete this trip? This action cannot be undone.')) {
+        console.log('Deleting active trip:', activeActivityData);
+        
+        // Clear the active activity data
+        activeActivityData = null;
+        localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
+        
+        // Update UI
+        if (activeTripInfoDiv) {
+            activeTripInfoDiv.style.display = 'none';
+        }
+        
+        const startActivityButton = document.getElementById('saveTripBtn');
+        if (startActivityButton) {
+            startActivityButton.style.display = 'block';
+        }
+        
+        alert('Trip deleted');
+    }
 }

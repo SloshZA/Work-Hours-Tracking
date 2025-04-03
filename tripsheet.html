@@ -6,21 +6,52 @@
     <title>Trip Sheet - Trip Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <!-- Add specific styles for filter buttons if needed, or add to style.css -->
+    <style>
+        .filter-controls {
+            display: flex; /* Arrange buttons horizontally */
+            justify-content: center; /* Center buttons */
+            gap: 10px; /* Space between buttons */
+            margin-bottom: 15px; /* Space below buttons */
+            flex-wrap: wrap; /* Allow wrapping on small screens if needed */
+        }
+        .filter-button {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .filter-button.active-filter {
+            background-color: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <div class="container tripsheet-container">
         <h1>Trip Sheet</h1>
         <a href="index.html" class="btn back-btn">Back to Main</a>
 
-        <!-- Add Sort Dropdown -->
-        <div class="sort-controls">
-            <label for="sortSelect">Sort by:</label>
-            <select id="sortSelect">
-                <option value="date">Date (Newest First)</option>
-                <option value="customer">Customer (A-Z, Newest First)</option>
-                <option value="user">User (A-Z, Newest First)</option>
-                <option value="vehicle">Vehicle (A-Z, Newest First)</option>
-            </select>
+        <div class="controls-container">
+            <!-- NEW: Filter Buttons Container -->
+            <div class="filter-controls">
+                <button id="filterAllBtn" class="filter-button active-filter">All</button>
+                <button id="filterTravelBtn" class="filter-button">Travel</button>
+                <button id="filterOfficeBtn" class="filter-button">Office</button>
+            </div>
+
+            <div class="sort-controls">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect">
+                    <option value="date">Date (Newest First)</option>
+                    <option value="customer">Customer (A-Z, Newest First)</option>
+                    <option value="user">User (A-Z, Newest First)</option>
+                    <option value="vehicle">Vehicle (A-Z, Newest First)</option>
+                </select>
+            </div>
         </div>
 
         <div id="tripsListContainer" class="table-container">

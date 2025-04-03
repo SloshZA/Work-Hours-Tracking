@@ -2,6 +2,8 @@ let db;
 let allTrips = []; // Variable to store fetched trips
 let sortSelectElement; // Reference to the dropdown
 let kmDetailsModal, closeKmModalBtn, modalStartKmValue, modalEndKmValue; // Add variables for the new modal elements
+let currentFilter = 'all'; // NEW: Variable to track the current filter ('all', 'travel', 'office')
+let filterAllBtn, filterTravelBtn, filterOfficeBtn; // NEW: References for filter buttons
 
 // --- IndexedDB Setup (Similar to app.js) ---
 const request = indexedDB.open('TripTrackerDB', 3);
@@ -47,6 +49,16 @@ request.onsuccess = (event) => {
     } else {
         console.error('TripSheet: Sort select element not found.');
     }
+
+    // NEW: Get references to filter buttons
+    filterAllBtn = document.getElementById('filterAllBtn');
+    filterTravelBtn = document.getElementById('filterTravelBtn');
+    filterOfficeBtn = document.getElementById('filterOfficeBtn');
+
+    // NEW: Add event listeners for filter buttons
+    if (filterAllBtn) filterAllBtn.addEventListener('click', () => setFilter('all'));
+    if (filterTravelBtn) filterTravelBtn.addEventListener('click', () => setFilter('travel'));
+    if (filterOfficeBtn) filterOfficeBtn.addEventListener('click', () => setFilter('office'));
 
     // *** ADD A SMALL DELAY ***
     // Wait a fraction of a second before trying to load data
@@ -192,14 +204,25 @@ function sortTrips(trips, sortBy) {
 }
 
 // --- UI Display ---
-function displayTripsTable(trips) {
-    console.log('TripSheet: displayTripsTable called with trips:', trips);
+function displayTripsTable(tripsToDisplay) { // Renamed parameter for clarity
+    console.log('TripSheet: displayTripsTable called with trips:', tripsToDisplay);
     const container = document.getElementById('tripsListContainer');
-    container.innerHTML = '';
+    container.innerHTML = ''; // Clear previous content
 
-    if (!trips || trips.length === 0) {
-        console.log('TripSheet: No trips found to display.');
-        container.innerHTML = '<p class="no-trips-message">No trips recorded yet.</p>';
+    // Check the filtered list length
+    if (!tripsToDisplay || tripsToDisplay.length === 0) {
+        // Display a message appropriate to the filter
+        let message = 'No trips recorded yet.';
+        if (currentFilter === 'travel') {
+            message = 'No travel trips match the current filter.';
+        } else if (currentFilter === 'office') {
+            message = 'No office work entries match the current filter.';
+        } else if (allTrips.length > 0) {
+             // This case shouldn't happen if filtering logic is correct, but good fallback
+             message = 'No trips match the current filter/sort criteria.';
+        }
+        console.log('TripSheet: No trips found to display for the current filter.');
+        container.innerHTML = `<p class="no-trips-message">${message}</p>`;
         return;
     }
 
@@ -209,7 +232,9 @@ function displayTripsTable(trips) {
 
     // Create table header (Change 'Total' to 'KM')
     const headerRow = document.createElement('tr');
-    const headers = ['Date', 'User', 'Car', 'KM', 'Customer', 'Purpose', 'Actions']; // Changed 'Vehicle' to 'Car'
+    // Adjust headers based on type? For now, keep consistent.
+    // Consider hiding 'Car'/'KM' for office entries if desired later.
+    const headers = ['Date', 'User', 'Car', 'KM', 'Customer', 'Purpose', 'Actions'];
     headers.forEach(headerText => {
         const th = document.createElement('th');
         th.textContent = headerText;
@@ -217,17 +242,17 @@ function displayTripsTable(trips) {
     });
     thead.appendChild(headerRow);
 
-    // Create table body
-    trips.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    trips.forEach(trip => {
+    // Create table body using the provided tripsToDisplay
+    tripsToDisplay.forEach(trip => {
         const row = document.createElement('tr');
         row.dataset.tripId = trip.id; // Store trip ID on the row
 
-        const totalKm = (trip.endKm && trip.startKm) ? (trip.endKm - trip.startKm) : 'N/A';
+        // Handle potential null/undefined values gracefully
+        const isTravel = trip.type === 'travel';
+        const totalKm = isTravel && trip.endKm && trip.startKm ? (trip.endKm - trip.startKm) : (isTravel ? 'N/A' : '-'); // Show '-' for office KM
         const formattedDate = trip.date ? new Date(trip.date).toLocaleDateString() : 'N/A';
 
-        // Create cells (Remove startKmCell and endKmCell)
+        // Create cells
         const dateCell = document.createElement('td');
         dateCell.textContent = formattedDate;
         row.appendChild(dateCell);
@@ -237,29 +262,27 @@ function displayTripsTable(trips) {
         row.appendChild(userCell);
 
         const vehicleCell = document.createElement('td');
-        vehicleCell.textContent = trip.vehicle ?? 'N/A';
+        // Show '-' for office vehicle
+        vehicleCell.textContent = isTravel ? (trip.vehicle ?? 'N/A') : '-';
         row.appendChild(vehicleCell);
-
-        // REMOVED startKmCell creation
-        // REMOVED endKmCell creation
 
         const totalKmCell = document.createElement('td');
         totalKmCell.textContent = totalKm;
-        totalKmCell.classList.add('total-km-cell');
-        // Add click listener to open the modal
-        totalKmCell.addEventListener('click', () => {
-            // Get the trip ID from the row
-            const clickedTripId = parseInt(row.dataset.tripId);
-            // Find the trip data
-            const clickedTrip = allTrips.find(t => t.id === clickedTripId);
-            if (clickedTrip) {
-                openKmDetailsModal(clickedTrip.startKm, clickedTrip.endKm);
-            } else {
-                console.error('Could not find trip data for ID:', clickedTripId);
-                // Optionally show default values or an error in the modal
-                openKmDetailsModal('Error', 'Error');
-            }
-        });
+        if (isTravel && totalKm !== 'N/A' && totalKm !== '-') { // Only make travel KM clickable
+             totalKmCell.classList.add('total-km-cell'); // Add class for potential styling/cursor
+             totalKmCell.addEventListener('click', () => {
+                const clickedTripId = parseInt(row.dataset.tripId);
+                const clickedTrip = allTrips.find(t => t.id === clickedTripId);
+                if (clickedTrip) {
+                    openKmDetailsModal(clickedTrip.startKm, clickedTrip.endKm);
+                } else {
+                    console.error('Could not find trip data for ID:', clickedTripId);
+                    openKmDetailsModal('Error', 'Error');
+                }
+            });
+        } else {
+            totalKmCell.style.cursor = 'default'; // Ensure non-clickable look
+        }
         row.appendChild(totalKmCell);
 
         const customerCell = document.createElement('td');
@@ -268,6 +291,7 @@ function displayTripsTable(trips) {
 
         const purposeCell = document.createElement('td');
         purposeCell.textContent = trip.purpose ?? 'N/A';
+        // Optionally add work details tooltip or similar here later
         row.appendChild(purposeCell);
 
         // Add Manage button
@@ -302,8 +326,8 @@ function handleSortChange() {
     if (!sortSelectElement) return;
     const sortBy = sortSelectElement.value;
     console.log(`TripSheet: Sort changed to ${sortBy}`);
-    const sortedTrips = sortTrips([...allTrips], sortBy); // Sort a copy of the stored trips
-    displayTripsTable(sortedTrips); // Re-render the table with sorted data
+    // Apply current filter AND new sort
+    displayFilteredAndSortedTrips();
 }
 
 // --- Initial Load ---
@@ -312,9 +336,8 @@ function loadAndDisplayTrips() {
     console.log('TripSheet: loadAndDisplayTrips called.'); // Log initial load
     getTrips((trips) => {
         allTrips = trips; // Store fetched trips globally
-        const initialSortBy = sortSelectElement ? sortSelectElement.value : 'date'; // Get initial sort value
-        const sortedTrips = sortTrips([...allTrips], initialSortBy); // Sort initially
-        displayTripsTable(sortedTrips); // Render the sorted table
+        // Apply initial filter ('all' by default) and sort
+        displayFilteredAndSortedTrips();
     });
 }
 
@@ -347,8 +370,10 @@ function deleteTrip(tripId) {
     
     request.onsuccess = () => {
         console.log(`Trip ${tripId} deleted successfully`);
-        // Reload trips after deletion
-        loadAndDisplayTrips();
+        // Remove deleted trip from the local 'allTrips' array
+        allTrips = allTrips.filter(t => t.id !== tripId);
+        // Reload trips using the current filter/sort
+        displayFilteredAndSortedTrips(); // Use the combined function
     };
     
     request.onerror = (event) => {
@@ -487,9 +512,17 @@ function saveEditedTrip() {
     
     request.onsuccess = () => {
         console.log('Trip updated successfully:', tripId);
-        // Hide modal and reload data
+        // Update the trip in the local 'allTrips' array
+        const index = allTrips.findIndex(t => t.id === tripId);
+        if (index !== -1) {
+            allTrips[index] = updatedTrip;
+        } else {
+            // Should not happen if editing existing, but maybe add it just in case
+            allTrips.push(updatedTrip);
+        }
+        // Hide modal and reload data using current filter/sort
         document.getElementById('editTripModal').style.display = 'none';
-        loadAndDisplayTrips();
+        displayFilteredAndSortedTrips(); // Use the combined function
     };
     
     request.onerror = (event) => {
@@ -600,4 +633,43 @@ document.addEventListener('DOMContentLoaded', () => {
             closeKmDetailsModal();
         }
     });
-}); 
+});
+
+// --- NEW: Function to set the current filter and update UI ---
+function setFilter(filterType) {
+    currentFilter = filterType;
+    console.log(`TripSheet: Filter set to ${currentFilter}`);
+
+    // Update button active states
+    [filterAllBtn, filterTravelBtn, filterOfficeBtn].forEach(btn => {
+        if (btn) btn.classList.remove('active-filter');
+    });
+    if (filterType === 'all' && filterAllBtn) filterAllBtn.classList.add('active-filter');
+    if (filterType === 'travel' && filterTravelBtn) filterTravelBtn.classList.add('active-filter');
+    if (filterType === 'office' && filterOfficeBtn) filterOfficeBtn.classList.add('active-filter');
+
+    // Re-display the table with the new filter applied
+    displayFilteredAndSortedTrips();
+}
+
+// --- NEW: Function to apply filter and sort, then display ---
+function displayFilteredAndSortedTrips() {
+    console.log(`TripSheet: Filtering by '${currentFilter}' and sorting by '${sortSelectElement ? sortSelectElement.value : 'date'}'`);
+
+    // 1. Filter
+    let filteredTrips = allTrips;
+    if (currentFilter === 'travel') {
+        filteredTrips = allTrips.filter(trip => trip.type === 'travel');
+    } else if (currentFilter === 'office') {
+        // Ensure 'office' type exists, otherwise default to showing none if type is missing/null
+        filteredTrips = allTrips.filter(trip => trip.type === 'office');
+    }
+    // 'all' filter doesn't need explicit filtering step
+
+    // 2. Sort
+    const sortBy = sortSelectElement ? sortSelectElement.value : 'date';
+    const sortedTrips = sortTrips([...filteredTrips], sortBy); // Sort the filtered list
+
+    // 3. Display
+    displayTripsTable(sortedTrips);
+} 

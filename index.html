@@ -28,7 +28,10 @@
             <div id="activeTripDetails">
                 <!-- Content will be added by JavaScript -->
             </div>
-            <button class="btn" id="completeTripBtn" style="margin-top: 15px; background-color: #dd4b39;">Complete Trip</button>
+            <div class="active-office-actions" style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+                <button class="btn btn-complete" id="completeTripBtn" style="flex: 1; background-color: #4CAF50;">Complete Trip</button>
+                <button class="btn btn-danger" id="deleteTripBtn" style="flex: 1;">Delete Task</button>
+            </div>
         </div>
 
         <!-- NEW: Active Office Work Display -->
@@ -37,9 +40,10 @@
             <div id="activeOfficeDetails">
                 <!-- Content will be added by JavaScript -->
             </div>
-            <div class="modal-actions" style="margin-top: 15px;">
-                 <button class="btn" id="editOfficeWorkBtn">Edit Work</button>
-                 <button class="btn" id="completeOfficeWorkBtn" style="background-color: #dd4b39;">Complete Work</button>
+            <div class="active-office-actions" style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" id="editOfficeWorkBtn" style="flex: 1;">Edit Work</button>
+                <button class="btn btn-complete" id="completeOfficeWorkBtn" style="flex: 1;">Complete Work</button>
+                <button class="btn btn-danger" id="deleteOfficeWorkBtn" style="flex: 1;">Delete Task</button>
             </div>
         </div>
 
