@@ -13,20 +13,25 @@
 
 .report-table th,
 .report-table td {
-    border: 1px solid #ddd;
+    border: 1px solid #444;
     padding: 8px 12px;
     text-align: left;
     vertical-align: top; /* Align content to top */
+    color: #e0e0e0; /* Light grey text in table */
 }
 
 .report-table th {
-    background-color: #f2f2f2;
+    background-color: #333;
     font-weight: 500;
+    color: #ffffff; /* White text for headers */
 }
 
 /* Add this rule for zebra striping */
 .report-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9; /* A very light grey for even rows */
+    background-color: #2c2c2c; /* Slightly lighter dark grey for even rows */
+}
+.report-table tbody tr:nth-child(odd) {
+    background-color: #1e1e1e; /* Base dark grey for odd rows */
 }
 
 .report-table td button {
@@ -35,34 +40,151 @@
 
 /* Styles for View Reports Modal */
 #reportsDisplayArea {
-    max-height: 400px; /* Limit height and make scrollable */
-    overflow-y: auto;
-    border: 1px solid #eee;
-    padding: 10px;
     margin-top: 15px;
     margin-bottom: 15px;
     text-align: left;
 }
 
-.reports-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+/* REMOVE or comment out old .reports-list styles */
+/*
+.reports-list { ... }
+.reports-list li { ... }
+.reports-list p { ... } 
+*/
+
+/* NEW Styles for Collapsible Report Entries */
+.report-entry {
+    border: 1px solid #555;
+    border-radius: 0; /* Remove rounded corners for a sharper look (optional) */
+    margin-bottom: 10px;
+    overflow: hidden; /* Contain children */
+    background-color: #2c2c2c; /* Base dark background for entry */
 }
 
-.reports-list li {
-    border-bottom: 1px dashed #ccc;
-    padding: 10px 0;
-    margin-bottom: 10px;
+.report-header {
+    background-color: #383838; /* Slightly different dark background for header */
+    border-bottom: 1px solid #555; /* Darker separator */
+    padding: 4px 12px; /* Reduced from 8px 12px */
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    font-weight: 500;
+    color: #ffffff; /* White header text */
+    font-size: 0.9em; /* Reduced font size for the header */
 }
-.reports-list li:last-child {
-    border-bottom: none;
+
+.report-header:hover {
+    background-color: #4a4a4a; /* Lighter dark on hover */
+    /* Remove background-color: #dee2e6; */
+}
+
+.report-summary {
+    flex-grow: 1; /* Allow summary text to take available space */
+    margin-right: 10px; /* Space before the icon */
+    color: #ffffff; /* Ensure summary text is black */
+}
+
+.report-toggle-icon {
+    font-weight: bold;
+    font-size: 1.2em;
+    min-width: 15px; /* Ensure space for the icon */
+    text-align: center;
+    color: #ffffff; /* Ensure icon is black */
+}
+
+.report-content {
+    padding: 15px;
+    background-color: #2c2c2c; 
+    max-height: 1000px; 
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+    color: #e0e0e0; 
+    border-top: none; 
+    text-align: left; /* Ensure overall content is left-aligned */
+}
+
+.report-content.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: none; 
+    /* Remove border-top: none; (No top border to remove) */
+}
+
+.report-content p {
+    margin: 0 0 8px 0; /* Adjust spacing within content */
+    white-space: pre-wrap; 
+    color: #e0e0e0; /* Light grey paragraph text */
+}
+.report-content p:last-child {
+    margin-bottom: 0;
+}
+.report-content strong {
+    font-weight: 500;
+    color: #ffffff; /* White strong text */
+}
+.report-content em {
+    font-style: normal; /* Keep labels distinct but not grey */
+    color: #aaa; /* Medium grey for labels */
+    /* Remove color: #555; */
+    margin-right: 5px; /* Add a little space after the label */
+}
+
+/* NEW: Styles for the inline identifiers container */
+.report-identifiers {
+    display: flex; /* Arrange items horizontally */
+    flex-wrap: wrap; /* Allow wrapping if the line gets too long */
+    gap: 15px; /* Space between items */
+    padding-bottom: 10px; /* Optional: Add padding below */
+    border-bottom: 1px solid #444; /* Optional: Separator line */
+}
+
+.report-identifier-item {
+    /* Styles for individual items like Device, Brand, Serial */
+    white-space: nowrap; /* Prevent wrapping within a single item */
+}
+
+.report-identifier-item em { /* Style the labels within the items */
+    font-style: normal; 
+    color: #aaa; 
+    margin-right: 5px; 
+}
+
+/* Styles for the details section */
+.report-details-section {
+    margin-bottom: 15px; /* Space below details before photos */
+    text-align: left; /* Explicitly left-align */
+}
+
+.report-details-section p {
+    margin: 0 0 8px 0; 
+    white-space: pre-wrap; 
+    color: #e0e0e0; 
+    text-align: left; /* Explicitly left-align paragraphs */
+}
+.report-details-section p:first-child { /* Style the "Details:" heading */
+     font-weight: bold;
+     color: #ffffff;
+     margin-bottom: 4px;
+}
+.report-details-section p:last-child {
     margin-bottom: 0;
 }
 
-.reports-list p {
-    margin: 5px 0 0 0;
-    white-space: pre-wrap; /* Preserve whitespace and line breaks in details */
+/* Styles for Report Photo Thumbnails */
+.report-photos-container {
+    margin-top: 8px; 
+    text-align: left; /* Ensure photos container is also left-aligned */
+}
+.report-photo-thumbnail {
+    border: 1px solid #555; 
+    max-width: 60px;  
+    max-height: 60px; 
+    height: auto;     
+    margin: 4px;      
+    cursor: pointer;  
+    vertical-align: middle; 
 }
 
 /* Styles for Add Report Modal */
@@ -74,6 +196,7 @@
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
+    color: #ccc; /* Lighter labels */
 }
 #addReportModal input[type="text"],
 #addReportModal select,
@@ -81,54 +204,302 @@
 #addReportModal input[type="file"] {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #555;
     border-radius: 4px;
     box-sizing: border-box; /* Include padding and border in element's total width/height */
+    background-color: #333; /* Dark input background */
+    color: #e0e0e0; /* Light input text */
 }
 #addReportModal textarea {
     resize: vertical; /* Allow vertical resize */
 }
 
-/* Styles for Photo Previews in Add Modal */
-.photo-previews {
-    margin-top: 10px;
+/* NEW: Styles for Photo Previews in Add Report Modal */
+#photoPreviewContainer {
+    margin-top: 10px; /* Add some space above the previews */
+    display: flex; /* Arrange previews horizontally */
+    flex-wrap: wrap; /* Allow previews to wrap to the next line */
+    gap: 8px; /* Add spacing between previews */
+}
+
+#photoPreviewContainer img {
+    max-width: 80px;  /* Limit maximum width for previews */
+    max-height: 80px; /* Limit maximum height for previews */
+    height: auto;     /* Maintain aspect ratio */
+    border: 1px solid #555; /* Darker border for previews */
+    object-fit: cover; /* Ensure image covers the area nicely */
+}
+
+/* Style for smaller modals (if not already global) */
+.modal-small .modal-content {
+    max-width: 400px; /* Adjust as needed */
+    padding: 20px;
+}
+
+.modal-small h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.modal-small .modal-actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Spacing between thumbnails */
+    justify-content: space-around; /* Or space-between */
+    margin-top: 20px;
 }
 
-.photo-previews img {
-    max-width: 80px; /* Size of thumbnails */
-    max-height: 80px;
-    border: 1px solid #ccc;
-    object-fit: cover; /* Crop images nicely */
-    cursor: pointer; /* Indicate they can be clicked (though preview click isn't implemented yet) */
+/* Utility class to hide elements */
+.hidden {
+    display: none !important; /* Use !important to ensure it overrides other display properties */
 }
 
-/* Styles for Enlarged Photo Modal */
-#enlargedPhotoModal .modal-content {
-    padding: 10px; /* Less padding for image */
-    max-width: 90vw; /* Allow modal to be wide */
-    max-height: 90vh; /* Allow modal to be tall */
-    overflow: hidden; /* Prevent scrollbars on modal content itself */
+/* NEW: Styles for inline form groups */
+.form-group-inline {
+    display: flex; /* Arrange children side-by-side */
+    gap: 15px; /* Add space between the children */
+    align-items: flex-end; /* Align items based on their bottom edge */
 }
 
-#enlargedPhotoImage {
+.form-group-inline .form-subgroup {
+    flex: 1; /* Allow subgroups to grow and take up available space */
+    min-width: 0; /* Prevent overflow issues in flex items */
+}
+
+/* Ensure labels inside subgroups behave correctly */
+.form-group-inline .form-subgroup label {
     display: block;
-    max-width: 100%;
-    max-height: calc(90vh - 50px); /* Adjust based on padding/close button */
-    margin: auto; /* Center the image */
-    object-fit: contain; /* Show whole image, scaled down */
+    margin-bottom: 5px;
+    font-weight: 500;
 }
 
-/* Styles for Photo Thumbnails in View Modal */
-.report-photo-thumbnail {
-    max-width: 60px;
-    max-height: 60px;
-    border: 1px solid #ccc;
-    object-fit: cover;
+/* Ensure inputs inside subgroups take full width of their container */
+.form-group-inline .form-subgroup input[type="text"] {
+    width: 100%;
+    /* Inherit other input styles or redefine if needed */
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* --- Dark Theme Adjustments --- */
+
+body {
+    background-color: #121212; /* Very dark grey (almost black) */
+    color: #e0e0e0; /* Light grey text for body */
+    /* Ensure font is applied if not inherited */
+    font-family: 'Roboto', sans-serif; 
+}
+
+/* Adjust container background if needed, or let it be transparent */
+/* .reports-container { background-color: #1e1e1e; padding: 20px; } */
+
+h1 {
+    color: #ffffff; /* White heading */
+    border-bottom: 1px solid #444; /* Darker border */
+    padding-bottom: 10px;
+}
+
+/* --- Button Styles (Example - Adjust as needed) --- */
+.btn {
+    background-color: #007bff; /* Keep primary color or adjust */
+    color: #ffffff;
+    border: none;
+    /* Add hover/active states if not defined globally */
+}
+.btn:hover {
+    background-color: #0056b3;
+}
+.btn-secondary { /* Example for cancel/secondary */
+    background-color: #555;
+    color: #fff;
+}
+.btn-secondary:hover {
+    background-color: #777;
+}
+.back-btn { /* Ensure back button is visible */
+     background-color: #6c757d;
+     color: white;
+}
+.back-btn:hover {
+     background-color: #5a6268;
+}
+
+
+/* --- Modal Styles --- */
+.modal {
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+}
+
+.modal-content {
+    background-color: #2b2b2b; /* Dark background for modal content */
+    color: #e0e0e0; /* Light text */
+    border: 1px solid #555;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h2 {
+    color: #ffffff; /* White modal titles */
+    border-bottom: 1px solid #444;
+}
+
+.close-btn {
+    color: #ccc; /* Lighter close button */
+    text-shadow: none;
+}
+.close-btn:hover {
+    color: #fff;
+}
+
+/* Modal Form Elements */
+#addReportModal input[type="text"]::placeholder,
+#addReportModal textarea::placeholder {
+    color: #888; /* Lighter placeholder text */
+}
+#addReportModal select {
+    /* May need specific styling for dropdown arrow in dark mode */
+}
+
+#addReportModal input[type="file"] {
+     color: #ccc; /* Style file input text if possible */
+}
+/* Style the button shown for file input */
+#addReportModal input[type="file"]::file-selector-button {
+    background-color: #555;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
     cursor: pointer;
-    margin-right: 5px;
-    margin-bottom: 5px;
-    vertical-align: middle;
+    margin-right: 10px;
+}
+#addReportModal input[type="file"]::file-selector-button:hover {
+     background-color: #777;
+}
+
+
+/* --- Collapsible Report Entry Styles --- */
+.report-entry {
+    border: 1px solid #555; /* Darker border */
+    border-radius: 0; 
+    margin-bottom: 10px;
+    overflow: hidden; 
+    background-color: #2c2c2c; /* Base dark background for entry */
+}
+
+.report-header {
+    background-color: #383838; /* Slightly different dark background for header */
+    border-bottom: 1px solid #555; /* Darker separator */
+    padding: 4px 12px; /* Reduced from 8px 12px */
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    font-weight: 500;
+    color: #ffffff; /* White header text */
+    font-size: 0.9em; /* Reduced font size for the header */
+}
+
+.report-header:hover {
+    background-color: #4a4a4a; /* Lighter dark on hover */
+}
+
+.report-summary {
+    flex-grow: 1; 
+    margin-right: 10px; 
+    color: #ffffff; /* White summary text */
+}
+
+.report-toggle-icon {
+    font-weight: bold;
+    font-size: 1.2em;
+    min-width: 15px; 
+    text-align: center;
+    color: #ffffff; /* White icon */
+}
+
+.report-content {
+    padding: 15px;
+    background-color: #2c2c2c; /* Match entry background */
+    max-height: 1000px; 
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+    color: #e0e0e0; /* Light grey content text */
+    border-top: none; /* Remove top border as header has bottom */
+}
+
+.report-content.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: none; 
+}
+
+.report-content p {
+    margin: 0 0 8px 0; 
+    white-space: pre-wrap; 
+    color: #e0e0e0; /* Light grey paragraph text */
+}
+.report-content p:last-child {
+    margin-bottom: 0;
+}
+.report-content strong {
+    font-weight: 500;
+    color: #ffffff; /* White strong text */
+}
+.report-content em { /* Labels like 'Device:', 'Model:' */
+    font-style: normal; 
+    color: #aaa; /* Medium grey for labels */
+    margin-right: 5px; 
+}
+
+/* Photo thumbnails */
+.report-photo-thumbnail {
+    border: 1px solid #555; /* Darker border for thumbnails */
+}
+#photoPreviewContainer img {
+     border: 1px solid #555; /* Darker border for previews */
+}
+
+/* REMOVED: Styles for Report Actions */
+/* 
+.report-actions {
+    margin-top: 15px; 
+    padding-top: 10px; 
+    border-top: 1px solid #444; 
+    text-align: right; 
 } 
+*/
+
+/* Specific style for delete button (keep this) */
+.btn-delete-report {
+    background-color: #dc3545; /* Red color */
+    color: white;
+    /* Add specific adjustments if needed for header placement */
+    /* e.g., padding: 3px 8px; */
+    /* margin-left: 10px; /* Add space before toggle icon */ */
+}
+.btn-delete-report:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
+/* Loading/Message Styles */
+.loading-message,
+#completedActivitiesListContainer p, /* Target 'No completed activities' */
+#reportsDisplayArea p /* Target 'No reports found' */
+{
+    color: #ccc; /* Lighter text for messages */
+    padding: 1px;
+    text-align: center;
+}
+.alert { /* Style alert messages if you have them */
+    color: #f8d7da; /* Light red text */
+    background-color: #721c24; /* Dark red background */
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* --- End Dark Theme Adjustments --- */
+
+/* ... rest of your existing styles ... */ 

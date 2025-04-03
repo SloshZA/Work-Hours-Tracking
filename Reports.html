@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - Trip Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css"> <!-- Link to main styles -->
-    <link rel="stylesheet" href="Stlying/Reports.css"> <!-- Link to report-specific styles -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="Stlying/Reports.css">
 </head>
 <body>
     <div class="container reports-container">
@@ -43,10 +43,31 @@
                         </select>
                     </div>
 
-                    <!-- Serial Number Field -->
-                    <div class="form-group">
-                        <label for="reportSerialNumber">Serial Number (Optional):</label>
-                        <input type="text" id="reportSerialNumber">
+                    <!-- Inline group for Model/Description/Brand and Serial Number -->
+                    <div class="form-group form-group-inline">
+                        <!-- Model Field (Initially Hidden) -->
+                        <div id="modelFieldContainer" class="form-subgroup hidden"> 
+                            <label for="reportModel">Model:</label>
+                            <input type="text" id="reportModel">
+                        </div>
+
+                        <!-- NEW: Description Field (Initially Hidden) -->
+                        <div id="descriptionFieldContainer" class="form-subgroup hidden"> 
+                            <label for="reportDescription">Description:</label>
+                            <input type="text" id="reportDescription">
+                        </div>
+
+                        <!-- NEW: Brand Field (Initially Hidden) -->
+                        <div id="brandFieldContainer" class="form-subgroup hidden"> 
+                            <label for="reportBrand">Brand:</label>
+                            <input type="text" id="reportBrand">
+                        </div>
+
+                        <!-- Serial Number Field -->
+                        <div class="form-subgroup"> 
+                            <label for="reportSerialNumber">Serial Number:</label> 
+                            <input type="text" id="reportSerialNumber" required> 
+                        </div>
                     </div>
 
                     <!-- Fault Report / Details Textarea -->
@@ -81,11 +102,16 @@
             </div>
         </div>
 
-        <!-- NEW: Modal for Enlarged Photo View -->
-        <div id="enlargedPhotoModal" class="modal modal-large">
+        <!-- NEW: Modal for Manage Options -->
+        <div id="manageReportModal" class="modal modal-small">
             <div class="modal-content">
-                <span id="closeEnlargedPhotoModalBtn" class="close-btn">&times;</span>
-                <img id="enlargedPhotoImage" src="" alt="Enlarged Photo">
+                <span id="closeManageReportModalBtn" class="close-btn">&times;</span>
+                <h2>Manage Report for Activity <span id="manageReportActivityId"></span></h2>
+                <div class="modal-actions">
+                    <button id="manageAddDetailsBtn" class="btn">Add Details</button>
+                    <button id="manageViewReportsBtn" class="btn">View Reports</button>
+                    <button id="manageCancelBtn" class="btn btn-secondary">Cancel</button>
+                </div>
             </div>
         </div>
 
@@ -93,5 +119,4 @@
 
     <script src="Reports.js"></script>
 </body>
-</html> 
 </html> 

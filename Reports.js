@@ -21,6 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const enlargedPhotoModal = document.getElementById('enlargedPhotoModal');
     const closeEnlargedPhotoModalBtn = document.getElementById('closeEnlargedPhotoModalBtn');
     const enlargedPhotoImage = document.getElementById('enlargedPhotoImage');
+    const manageReportModal = document.getElementById('manageReportModal');
+    const closeManageReportModalBtn = document.getElementById('closeManageReportModalBtn');
+    const manageReportActivityIdSpan = document.getElementById('manageReportActivityId');
+    const manageAddDetailsBtn = document.getElementById('manageAddDetailsBtn');
+    const manageViewReportsBtn = document.getElementById('manageViewReportsBtn');
+    const manageCancelBtn = document.getElementById('manageCancelBtn');
+    const modelFieldContainer = document.getElementById('modelFieldContainer');
+    const reportModelInput = document.getElementById('reportModel');
+    const descriptionFieldContainer = document.getElementById('descriptionFieldContainer');
+    const reportDescriptionInput = document.getElementById('reportDescription');
+    const brandFieldContainer = document.getElementById('brandFieldContainer');
+    const reportBrandInput = document.getElementById('reportBrand');
+
+    // --- State Variable ---
+    let currentManageTripId = null;
 
     // --- Database Setup ---
     let db;
@@ -127,8 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${act.customer || 'N/A'}</td>
                     <td>${act.purpose || 'N/A'}</td>
                     <td>
-                        <button class="btn btn-small btn-add-report" data-trip-id="${act.id}">Add Details</button>
-                        <button class="btn btn-small btn-view-reports" data-trip-id="${act.id}">View Reports</button>
+                        <button class="btn btn-small btn-manage-report" data-trip-id="${act.id}">Manage</button>
                     </td>
                 </tr>
             `;
@@ -137,32 +151,49 @@ document.addEventListener('DOMContentLoaded', () => {
         html += '</tbody></table>';
         completedActivitiesContainer.innerHTML = html;
 
-        // Add listeners to the new buttons
-        document.querySelectorAll('.btn-add-report').forEach(button => {
-            button.addEventListener('click', handleAddReportClick);
-        });
-        document.querySelectorAll('.btn-view-reports').forEach(button => {
-            button.addEventListener('click', handleViewReportsClick);
+        // Add listeners to the new Manage buttons
+        document.querySelectorAll('.btn-manage-report').forEach(button => {
+            button.addEventListener('click', handleManageClick);
         });
     }
 
-    function handleAddReportClick(event) {
-        const tripId = event.currentTarget.dataset.tripId;
-        console.log('Add report clicked for trip ID:', tripId);
-        openAddReportModal(tripId);
+    function handleManageClick(event) {
+        currentManageTripId = event.currentTarget.dataset.tripId;
+        console.log('Manage report clicked for trip ID:', currentManageTripId);
+        if (manageReportModal && manageReportActivityIdSpan) {
+            manageReportActivityIdSpan.textContent = currentManageTripId;
+            manageReportModal.style.display = 'block';
+        } else {
+            console.error("Manage report modal elements not found!");
+        }
     }
 
-    function handleViewReportsClick(event) {
-        const tripId = event.currentTarget.dataset.tripId;
-        console.log('View reports clicked for trip ID:', tripId);
-        openViewReportsModal(tripId);
+    function closeManageReportModal() {
+        if (manageReportModal) {
+            manageReportModal.style.display = 'none';
+        }
+        currentManageTripId = null;
     }
 
     function openAddReportModal(tripId) {
-        addReportForm.reset(); // Clear previous entries
-        photoPreviewContainer.innerHTML = ''; // Clear photo previews
-        addReportTripIdInput.value = tripId; // Store the trip ID
-        reportActivityIdSpan.textContent = tripId; // Display trip ID in title
+        addReportForm.reset();
+        photoPreviewContainer.innerHTML = '';
+        addReportTripIdInput.value = tripId;
+        reportActivityIdSpan.textContent = tripId;
+
+        // Ensure ALL conditional fields are hidden initially
+        if (modelFieldContainer) modelFieldContainer.classList.add('hidden');
+        if (descriptionFieldContainer) descriptionFieldContainer.classList.add('hidden');
+        if (brandFieldContainer) brandFieldContainer.classList.add('hidden');
+
+        // Clear values
+        if (reportModelInput) reportModelInput.value = '';
+        if (reportDescriptionInput) reportDescriptionInput.value = '';
+        if (reportBrandInput) reportBrandInput.value = '';
+
+        // Reset Serial Number to required initially
+        if (reportSerialNumberInput) reportSerialNumberInput.required = true;
+
         addReportModal.style.display = 'block';
     }
 
@@ -200,6 +231,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function handleDeviceTypeChange() {
+        const selectedType = reportDeviceTypeSelect.value;
+
+        // Hide all conditional fields by default
+        if (modelFieldContainer) modelFieldContainer.classList.add('hidden');
+        if (descriptionFieldContainer) descriptionFieldContainer.classList.add('hidden');
+        if (brandFieldContainer) brandFieldContainer.classList.add('hidden');
+
+        // Assume Serial Number is required unless changed
+        let isSerialRequired = true;
+
+        // Show the relevant field based on selection
+        if (selectedType === 'PC' || selectedType === 'Printer') {
+            if (modelFieldContainer) modelFieldContainer.classList.remove('hidden');
+        } else if (selectedType === 'Other') {
+            if (descriptionFieldContainer) descriptionFieldContainer.classList.remove('hidden');
+        } else if (selectedType === 'Monitor') {
+            if (brandFieldContainer) brandFieldContainer.classList.remove('hidden');
+        } else if (selectedType === 'Network') {
+            if (brandFieldContainer) brandFieldContainer.classList.remove('hidden');
+            isSerialRequired = false; // Serial number is NOT required for Network Device
+        }
+
+        // Clear values of hidden fields
+        if (modelFieldContainer && modelFieldContainer.classList.contains('hidden') && reportModelInput) reportModelInput.value = '';
+        if (descriptionFieldContainer && descriptionFieldContainer.classList.contains('hidden') && reportDescriptionInput) reportDescriptionInput.value = '';
+        if (brandFieldContainer && brandFieldContainer.classList.contains('hidden') && reportBrandInput) reportBrandInput.value = '';
+
+        // Update the 'required' attribute on the Serial Number input
+        if (reportSerialNumberInput) {
+            reportSerialNumberInput.required = isSerialRequired;
+        }
+    }
+
     async function handleSaveReportSubmit(event) {
         event.preventDefault();
         console.log('Saving report details...');
@@ -210,8 +275,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const details = reportDetailsTextarea.value.trim();
         const photoFiles = reportPhotoInput.files;
 
-        if (!tripId || !details) {
-            alert('Please enter Fault Report / Notes.');
+        // Get conditional field values
+        let model = '';
+        let description = '';
+        let brand = '';
+
+        if (deviceType === 'PC' || deviceType === 'Printer') {
+            model = reportModelInput.value.trim();
+        } else if (deviceType === 'Other') {
+            description = reportDescriptionInput.value.trim();
+        } else if (deviceType === 'Monitor' || deviceType === 'Network') {
+            brand = reportBrandInput.value.trim();
+        }
+
+        // Validation: Check required fields
+        if (!tripId || !details || (reportSerialNumberInput.required && !serialNumber)) {
+            let alertMessage = 'Please enter Fault Report / Notes';
+            if (reportSerialNumberInput.required) {
+                alertMessage += ' AND Serial Number.';
+            } else {
+                alertMessage += '.';
+            }
+            alert(alertMessage);
             return;
         }
 
@@ -248,6 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const reportData = {
             tripId: tripId,
             deviceType: deviceType,
+            model: model,
+            description: description,
+            brand: brand,
             serialNumber: serialNumber,
             details: details,
             photos: photosData,
@@ -307,49 +395,152 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        reports.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+        reports.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
 
-        let html = '<ul class="reports-list">';
+        let html = ''; 
         reports.forEach((report, index) => {
-            const reportDate = new Date(report.timestamp).toLocaleString();
-            html += `<li>`;
-            html += `<strong>Details added on ${reportDate}:</strong><br>`;
+            const reportDate = new Date(report.timestamp).toLocaleDateString();
+            const summary = report.deviceType ? `${report.deviceType}` : 'General Notes';
+            const identifier = report.serialNumber || report.model || report.brand || report.description || `Entry ${index + 1}`;
+
+            // Build the inline identifier string conditionally
+            let identifiersHtml = '<div class="report-identifiers">'; // Container for inline items
             if (report.deviceType) {
-                html += `<p><em>Device:</em> ${report.deviceType}</p>`;
+                identifiersHtml += `<span class="report-identifier-item"><em>Device:</em> ${report.deviceType}</span>`;
+            }
+            if (report.model) {
+                identifiersHtml += `<span class="report-identifier-item"><em>Model:</em> ${report.model}</span>`;
+            }
+            if (report.description) {
+                identifiersHtml += `<span class="report-identifier-item"><em>Description:</em> ${report.description}</span>`;
+            }
+            if (report.brand) {
+                identifiersHtml += `<span class="report-identifier-item"><em>Brand:</em> ${report.brand}</span>`;
             }
             if (report.serialNumber) {
-                html += `<p><em>Serial:</em> ${report.serialNumber}</p>`;
+                identifiersHtml += `<span class="report-identifier-item"><em>Serial:</em> ${report.serialNumber}</span>`;
             }
-            html += `<p>${report.details.replace(/\n/g, '<br>')}</p>`;
+            identifiersHtml += '</div>'; // Close container
 
-            if (report.photos && report.photos.length > 0) {
-                html += `<div class="report-photos-container">`;
-                report.photos.forEach((photo, photoIndex) => {
-                    html += `<img src="${photo.dataUrl}" 
-                                  alt="${photo.name}" 
-                                  class="report-photo-thumbnail" 
-                                  onclick="openEnlargedPhoto('${photo.dataUrl}')">`;
-                });
-                html += `</div>`;
-            }
-            html += `</li>`;
+            html += `
+                <div class="report-entry">
+                    <div class="report-header" data-report-index="${index}">
+                        <span class="report-summary">${reportDate} - ${summary} (${identifier})</span>
+                        <button class="btn btn-danger btn-small btn-delete-report" data-report-id="${report.id}" style="margin-left: 10px;">Delete</button> 
+                        <span class="report-toggle-icon">+</span> 
+                    </div>
+                    <div class="report-content collapsed" id="report-content-${index}"> 
+                        
+                        ${identifiersHtml}
+
+                        <div class="report-details-section">
+                            <p><strong>Details:</strong></p>
+                            <p>${report.details.replace(/\n/g, '<br>')}</p>
+                        </div>
+                        
+                        ${report.photos && report.photos.length > 0 ? `
+                            <div class="report-photos-container">
+                                ${report.photos.map(photo => `
+                                    <img src="${photo.dataUrl}" 
+                                         alt="${photo.name}" 
+                                         class="report-photo-thumbnail" 
+                                         onclick="openEnlargedPhoto('${photo.dataUrl}')"> 
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
         });
-        html += '</ul>';
+        
         reportsDisplayArea.innerHTML = html;
     }
 
-    window.openEnlargedPhoto = function(dataUrl) {
-        if (enlargedPhotoImage && enlargedPhotoModal) {
-            enlargedPhotoImage.src = dataUrl;
-            enlargedPhotoModal.style.display = 'block';
+    function handleReportToggle(event) {
+        // Find the closest report header that was clicked
+        const header = event.target.closest('.report-header');
+        if (!header) return; // Exit if click wasn't on or inside a header
+
+        const reportIndex = header.dataset.reportIndex;
+        const content = document.getElementById(`report-content-${reportIndex}`);
+        const icon = header.querySelector('.report-toggle-icon');
+
+        if (content && icon) {
+            const isCollapsed = content.classList.contains('collapsed');
+            if (isCollapsed) {
+                content.classList.remove('collapsed');
+                icon.textContent = '−'; // Minus sign for expanded
+            } else {
+                content.classList.add('collapsed');
+                icon.textContent = '+'; // Plus sign for collapsed
+            }
         }
     }
 
-    function closeEnlargedPhotoModal() {
-        if (enlargedPhotoModal) {
-            enlargedPhotoModal.style.display = 'none';
-            enlargedPhotoImage.src = '';
+    // MODIFIED: Open image in a new tab instead of a modal
+    window.openEnlargedPhoto = function(dataUrl) {
+        // Open the image data URL in a new browser tab
+        window.open(dataUrl, '_blank'); 
+    }
+
+    // NEW: Handle Delete Report Button Click
+    function handleDeleteReportClick(button) {
+        const reportId = Number(button.dataset.reportId);
+        if (!reportId) {
+            console.error('Delete failed: Report ID not found on button.');
+            return;
         }
+
+        if (confirm('Are you sure you want to delete this report entry? This action cannot be undone.')) {
+            console.log(`Attempting to delete report with ID: ${reportId}`);
+            deleteReportFromDB(reportId, (success) => {
+                if (success) {
+                    console.log(`Report ${reportId} deleted successfully.`);
+                    // Refresh the reports list in the modal
+                    const currentTripId = viewReportActivityIdSpan.textContent; 
+                    if (currentTripId) {
+                        loadAndDisplayReportsForTrip(currentTripId);
+                    } else {
+                        console.error("Could not refresh reports: Trip ID not found.");
+                        // Optionally close and reopen modal or show message
+                        reportsDisplayArea.innerHTML = '<p class="alert">Report deleted. Please close and reopen to see changes.</p>';
+                    }
+                } else {
+                    console.error(`Failed to delete report ${reportId}.`);
+                    alert('Failed to delete the report entry. Please try again.');
+                }
+            });
+        } else {
+            console.log('Report deletion cancelled by user.');
+        }
+    }
+
+    // NEW: Delete Report from IndexedDB
+    function deleteReportFromDB(reportId, callback) {
+        if (!db) {
+            console.error("Database not available for deletion.");
+            return callback(false);
+        }
+
+        const transaction = db.transaction(['reports'], 'readwrite');
+        const store = transaction.objectStore('reports');
+        const request = store.delete(reportId);
+
+        request.onsuccess = () => {
+            console.log(`Successfully initiated deletion for report ID: ${reportId}`);
+            callback(true);
+        };
+        request.onerror = (event) => {
+            console.error(`Error deleting report ID ${reportId}:`, event.target.error);
+            callback(false);
+        };
+        transaction.oncomplete = () => {
+             console.log(`Transaction completed for deleting report ID: ${reportId}`);
+        };
+        transaction.onerror = (event) => {
+             console.error(`Transaction error during deletion for report ID ${reportId}:`, event.target.error);
+             // Callback might have already been called with false in request.onerror
+        };
     }
 
     function setupEventListeners() {
@@ -357,7 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (closeAddReportModalBtn) closeAddReportModalBtn.addEventListener('click', closeAddReportModal);
         if (closeViewReportsModalBtn) closeViewReportsModalBtn.addEventListener('click', closeViewReportsModal);
         if (closeViewReportsOkBtn) closeViewReportsOkBtn.addEventListener('click', closeViewReportsModal);
-        if (closeEnlargedPhotoModalBtn) closeEnlargedPhotoModalBtn.addEventListener('click', closeEnlargedPhotoModal);
+        if (closeManageReportModalBtn) closeManageReportModalBtn.addEventListener('click', closeManageReportModal);
+        if (manageCancelBtn) manageCancelBtn.addEventListener('click', closeManageReportModal);
 
         // Add Report form submission
         if (addReportForm) addReportForm.addEventListener('submit', handleSaveReportSubmit);
@@ -365,11 +557,68 @@ document.addEventListener('DOMContentLoaded', () => {
         // Photo input change listener for previews
         if (reportPhotoInput) reportPhotoInput.addEventListener('change', handlePhotoInputChange);
 
+        // NEW: Manage Modal Listeners
+        if (closeManageReportModalBtn) closeManageReportModalBtn.addEventListener('click', closeManageReportModal);
+        if (manageCancelBtn) manageCancelBtn.addEventListener('click', closeManageReportModal);
+        
+        // Link "Add Details" button in Manage Modal
+        if (manageAddDetailsBtn) {
+            manageAddDetailsBtn.addEventListener('click', () => {
+                // Check if we have a valid trip ID stored
+                if (currentManageTripId) { 
+                    // Call the function to open the Add Report modal, passing the stored ID
+                    openAddReportModal(currentManageTripId); 
+                    // Close the Manage modal after opening the Add modal
+                    closeManageReportModal(); 
+                } else {
+                    console.error("Cannot add details: No trip ID selected."); 
+                }
+            });
+        }
+        
+        // Link "View Reports" button in Manage Modal
+        if (manageViewReportsBtn) {
+            manageViewReportsBtn.addEventListener('click', () => {
+                // Check if we have a valid trip ID stored
+                if (currentManageTripId) {
+                    // Call the function to open the View Reports modal, passing the stored ID
+                    openViewReportsModal(currentManageTripId); 
+                    // Close the Manage modal after opening the View modal
+                    closeManageReportModal(); 
+                } else {
+                    console.error("Cannot view reports: No trip ID selected.");
+                }
+            });
+        }
+
+        // NEW: Listener for Device Type dropdown change
+        if (reportDeviceTypeSelect) {
+            reportDeviceTypeSelect.addEventListener('change', handleDeviceTypeChange);
+        }
+
+        // UPDATED: Listener for report toggling AND deleting within the view modal
+        if (reportsDisplayArea) {
+            reportsDisplayArea.addEventListener('click', (event) => {
+                // Check if the click was on a toggle header
+                const header = event.target.closest('.report-header');
+                if (header) {
+                    handleReportToggle(event);
+                    return; // Stop further processing if it was a toggle click
+                }
+
+                // Check if the click was on a delete button
+                const deleteButton = event.target.closest('.btn-delete-report');
+                if (deleteButton) {
+                    handleDeleteReportClick(deleteButton);
+                }
+            });
+        }
+
         // Close modals on outside click
         window.addEventListener('click', (event) => {
             if (event.target === addReportModal) closeAddReportModal();
             if (event.target === viewReportsModal) closeViewReportsModal();
-            if (event.target === enlargedPhotoModal) closeEnlargedPhotoModal();
+            if (event.target === manageReportModal) closeManageReportModal(); 
         });
     }
 
