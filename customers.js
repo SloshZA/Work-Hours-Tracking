@@ -3,7 +3,7 @@ let allCustomers = [];
 let allTrips = []; // Needed for last visited date
 
 // --- IndexedDB Setup ---
-const request = indexedDB.open('TripTrackerDB', 4);
+const request = indexedDB.open('TripTrackerDB', 5);
 
 request.onupgradeneeded = (event) => {
     console.log('Customers: DB upgrade needed.');

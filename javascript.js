@@ -58,51 +58,64 @@ const editTripBtn = document.getElementById('editTripBtn'); // Add reference for
 const deleteOfficeWorkBtn = document.getElementById('deleteOfficeWorkBtn');
 const deleteTripBtn = document.getElementById('deleteTripBtn');
 
-const request = indexedDB.open('TripTrackerDB', 4);
+const request = indexedDB.open('TripTrackerDB', 5);
 
 request.onupgradeneeded = (event) => {
     db = event.target.result;
     console.log(`Upgrading database to version ${db.version}`);
 
-    if (!db.objectStoreNames.contains('trips')) {
-        console.log('Creating trips store');
-        db.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
+    if (event.oldVersion < 1) { // Example: Initial setup
+        // Code for version 1
     }
-    if (!db.objectStoreNames.contains('customers')) {
-        console.log('Creating customers store');
-        const customerStore = db.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
-        if (!customerStore.indexNames.contains('name')) {
-            console.log('Creating name index on customers store');
-            customerStore.createIndex('name', 'name', { unique: false });
+    if (event.oldVersion < 2) { // Example: Changes for version 2
+        // Code for version 2
+    }
+    if (event.oldVersion < 3) { // Example: Changes for version 3
+        // Code for version 3
+    }
+    if (event.oldVersion < 4) { // Changes made for version 4
+        console.log('Applying upgrades for version 4');
+        if (!db.objectStoreNames.contains('trips')) {
+            console.log('Creating trips store');
+            db.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
+        }
+        if (!db.objectStoreNames.contains('customers')) {
+            console.log('Creating customers store');
+            const customerStore = db.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
+            if (!customerStore.indexNames.contains('name')) {
+                customerStore.createIndex('name', 'name', { unique: false });
+            }
+        }
+        if (!db.objectStoreNames.contains('vehicles')) {
+            console.log('Creating vehicles store');
+            const vehicleStore = db.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
+            if (!vehicleStore.indexNames.contains('name')) {
+                vehicleStore.createIndex('name', 'name', { unique: true });
+            }
+        } else {
+            const transaction = event.target.transaction;
+            const vehicleStore = transaction.objectStore('vehicles');
+            if (!vehicleStore.indexNames.contains('name')) {
+                 vehicleStore.createIndex('name', 'name', { unique: true });
+            }
+        }
+        if (!db.objectStoreNames.contains('preferences')) {
+            console.log('Creating preferences store');
+            db.createObjectStore('preferences', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('reminders')) {
+            console.log('Creating reminders store');
+            db.createObjectStore('reminders', { keyPath: 'id', autoIncrement: true });
         }
     }
-    if (!db.objectStoreNames.contains('vehicles')) {
-        console.log('Creating vehicles store');
-        const vehicleStore = db.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
-        if (!vehicleStore.indexNames.contains('name')) {
-            console.log('Creating name index on vehicles store');
-            vehicleStore.createIndex('name', 'name', { unique: true });
+    if (event.oldVersion < 5) { // Changes made for version 5 (from Reports.js)
+        console.log('Applying upgrades for version 5');
+        if (!db.objectStoreNames.contains('reports')) {
+            console.log('Creating reports store');
+            const reportStore = db.createObjectStore('reports', { keyPath: 'id', autoIncrement: true });
+            reportStore.createIndex('tripId', 'tripId', { unique: false });
+            console.log('Created tripId index on reports store');
         }
-    } else {
-        // If store exists, ensure index exists (needed if upgrading)
-        const transaction = event.target.transaction; // Get transaction from event
-        const vehicleStore = transaction.objectStore('vehicles');
-        if (!vehicleStore.indexNames.contains('name')) {
-             console.log('Creating name index on existing vehicles store');
-             vehicleStore.createIndex('name', 'name', { unique: true });
-        }
-    }
-    if (!db.objectStoreNames.contains('preferences')) {
-        console.log('Creating preferences store');
-        db.createObjectStore('preferences', { keyPath: 'id' });
-    }
-    // --- Add reminders store if not already present ---
-    if (!db.objectStoreNames.contains('reminders')) {
-        console.log('Creating reminders store');
-        const reminderStore = db.createObjectStore('reminders', { keyPath: 'id', autoIncrement: true });
-        // Optional: Add indexes if needed for querying later (e.g., by date)
-        // reminderStore.createIndex('reminderDate', 'reminderDate', { unique: false });
-        // reminderStore.createIndex('customer', 'customer', { unique: false });
     }
 };
 
@@ -914,7 +927,8 @@ function setupEventListeners() {
     const manageCustomersBtn = document.getElementById('manageCustomersBtn');
     const manageVehiclesBtn = document.getElementById('manageVehiclesBtn');
     const manageDataBtn = document.getElementById('manageDataBtn');
-    const workScheduleBtn = document.getElementById('workScheduleBtn'); // <-- Get the new button
+    const workScheduleBtn = document.getElementById('workScheduleBtn');
+    const reportsBtn = document.getElementById('reportsBtn'); // <-- Get the new button
     const completeTripBtnOnPage = document.getElementById('completeTripBtn'); // Travel complete
     const editTripBtnOnPage = document.getElementById('editTripBtn'); // Travel edit button
     const workReminderBtn = document.getElementById('workReminderBtn'); // Get the reminder button
@@ -1014,6 +1028,14 @@ function setupEventListeners() {
         viewTripsBtn.addEventListener('click', () => {
             window.location.href = 'tripsheet.html';
             });
+    }
+    // --- NEW: Reports Button Listener ---
+    if (reportsBtn) {
+        reportsBtn.addEventListener('click', () => {
+            window.location.href = 'Reports.html'; // Navigate to the new page
+        });
+    } else {
+        console.warn('Button with ID "reportsBtn" not found');
     }
     // --- NEW: Work Schedule Button Listener ---
     if (workScheduleBtn) {
@@ -1192,7 +1214,6 @@ function handleDeleteOfficeWork() {
             startActivityButton.style.display = 'block';
         }
         
-        alert('Office task deleted');
     }
 }
 
@@ -1221,7 +1242,6 @@ function handleDeleteTripTask() {
             startActivityButton.style.display = 'block';
         }
         
-        alert('Trip deleted');
     }
 }
 

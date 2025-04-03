@@ -1,0 +1,134 @@
+.reports-container .page-controls {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.report-table th,
+.report-table td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top; /* Align content to top */
+}
+
+.report-table th {
+    background-color: #f2f2f2;
+    font-weight: 500;
+}
+
+/* Add this rule for zebra striping */
+.report-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* A very light grey for even rows */
+}
+
+.report-table td button {
+    margin-right: 5px;
+}
+
+/* Styles for View Reports Modal */
+#reportsDisplayArea {
+    max-height: 400px; /* Limit height and make scrollable */
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.reports-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.reports-list li {
+    border-bottom: 1px dashed #ccc;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+.reports-list li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.reports-list p {
+    margin: 5px 0 0 0;
+    white-space: pre-wrap; /* Preserve whitespace and line breaks in details */
+}
+
+/* Styles for Add Report Modal */
+#addReportModal .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+#addReportModal label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+#addReportModal input[type="text"],
+#addReportModal select,
+#addReportModal textarea,
+#addReportModal input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border in element's total width/height */
+}
+#addReportModal textarea {
+    resize: vertical; /* Allow vertical resize */
+}
+
+/* Styles for Photo Previews in Add Modal */
+.photo-previews {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Spacing between thumbnails */
+}
+
+.photo-previews img {
+    max-width: 80px; /* Size of thumbnails */
+    max-height: 80px;
+    border: 1px solid #ccc;
+    object-fit: cover; /* Crop images nicely */
+    cursor: pointer; /* Indicate they can be clicked (though preview click isn't implemented yet) */
+}
+
+/* Styles for Enlarged Photo Modal */
+#enlargedPhotoModal .modal-content {
+    padding: 10px; /* Less padding for image */
+    max-width: 90vw; /* Allow modal to be wide */
+    max-height: 90vh; /* Allow modal to be tall */
+    overflow: hidden; /* Prevent scrollbars on modal content itself */
+}
+
+#enlargedPhotoImage {
+    display: block;
+    max-width: 100%;
+    max-height: calc(90vh - 50px); /* Adjust based on padding/close button */
+    margin: auto; /* Center the image */
+    object-fit: contain; /* Show whole image, scaled down */
+}
+
+/* Styles for Photo Thumbnails in View Modal */
+.report-photo-thumbnail {
+    max-width: 60px;
+    max-height: 60px;
+    border: 1px solid #ccc;
+    object-fit: cover;
+    cursor: pointer;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    vertical-align: middle;
+} 

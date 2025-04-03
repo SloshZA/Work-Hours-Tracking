@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Database Setup ---
     let db;
-    const request = indexedDB.open('TripTrackerDB', 4);
+    const request = indexedDB.open('TripTrackerDB', 5);
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
@@ -204,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (storedActivity) {
             // --- MODIFIED: Show custom modal instead of alert ---
             openActivityInProgressModal();
-            // alert('An activity (Travel or Office Work) is already in progress. Please complete it first.');
             // --- End MODIFIED ---
             return; // Exit the function if there is an active activity
         }

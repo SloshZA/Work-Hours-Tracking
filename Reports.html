@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Trip Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css"> <!-- Link to main styles -->
+    <link rel="stylesheet" href="Stlying/Reports.css"> <!-- Link to report-specific styles -->
+</head>
+<body>
+    <div class="container reports-container">
+        <h1>Activity Reports</h1>
+        <div class="page-controls">
+            <a href="index.html" class="btn back-btn">Back to Main</a>
+            <!-- Add filters or other controls here later if needed -->
+        </div>
+
+        <div id="completedActivitiesListContainer" class="table-container">
+            <p class="loading-message">Loading completed activities...</p>
+            <!-- Completed trips/work will be listed here -->
+        </div>
+
+        <!-- Modal for Adding a Report (REVISED STRUCTURE) -->
+        <div id="addReportModal" class="modal">
+            <div class="modal-content">
+                <span id="closeAddReportModalBtn" class="close-btn">&times;</span>
+                <!-- Revised Title -->
+                <h2>Add Details for Activity <span id="reportActivityId"></span></h2> 
+                <form id="addReportForm">
+                    <input type="hidden" id="addReportTripId"> 
+
+                    <!-- Device Type Dropdown -->
+                    <div class="form-group">
+                        <label for="reportDeviceType">Device Type (Optional):</label>
+                        <select id="reportDeviceType">
+                            <option value="">-- Select Device --</option>
+                            <option value="PC">PC</option>
+                            <option value="Printer">Printer</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Network">Network Device</option>
+                            <option value="Other">Other</option> 
+                        </select>
+                    </div>
+
+                    <!-- Serial Number Field -->
+                    <div class="form-group">
+                        <label for="reportSerialNumber">Serial Number (Optional):</label>
+                        <input type="text" id="reportSerialNumber">
+                    </div>
+
+                    <!-- Fault Report / Details Textarea -->
+                    <div class="form-group">
+                        <label for="reportDetails">Fault Report / Notes:</label> 
+                        <textarea id="reportDetails" rows="6" required></textarea> 
+                    </div>
+
+                    <!-- Photo Upload Field (Allow Multiple) -->
+                    <div class="form-group">
+                        <label for="reportPhoto">Upload Photos (Optional):</label>
+                        <input type="file" id="reportPhoto" accept="image/*" multiple> 
+                        <!-- Container for image previews -->
+                        <div id="photoPreviewContainer" class="photo-previews"></div> 
+                    </div>
+
+                    <button type="submit" class="btn">Save Details</button> 
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal for Viewing Reports (Structure remains the same for now) -->
+        <div id="viewReportsModal" class="modal">
+            <div class="modal-content">
+                <span id="closeViewReportsModalBtn" class="close-btn">&times;</span>
+                <h2>Reports for Activity <span id="viewReportActivityId"></span></h2>
+                <div id="reportsDisplayArea">
+                    <!-- Reports will be listed here -->
+                    <p>Loading reports...</p>
+                </div>
+                <button id="closeViewReportsOkBtn" class="btn">OK</button>
+            </div>
+        </div>
+
+        <!-- NEW: Modal for Enlarged Photo View -->
+        <div id="enlargedPhotoModal" class="modal modal-large">
+            <div class="modal-content">
+                <span id="closeEnlargedPhotoModalBtn" class="close-btn">&times;</span>
+                <img id="enlargedPhotoImage" src="" alt="Enlarged Photo">
+            </div>
+        </div>
+
+    </div>
+
+    <script src="Reports.js"></script>
+</body>
+</html> 
+</html> 

@@ -21,3 +21,11 @@
 #vehicleModal #saveVehicleBtn {
     margin-top: 20px;
 }
+
+/* Adjust size of the Add New Vehicle button */
+.vehicles-container .page-controls .add-vehicle-btn {
+    padding: 8px 16px; /* Reduce vertical and horizontal padding */
+    font-size: 0.9em;  /* Optionally make the font slightly smaller */
+    /* You could also set a max-width if needed: */
+    /* max-width: 180px; */ 
+}

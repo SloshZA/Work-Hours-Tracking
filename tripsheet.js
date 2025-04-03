@@ -6,7 +6,7 @@ let currentFilter = 'all'; // NEW: Variable to track the current filter ('all', 
 let filterAllBtn, filterTravelBtn, filterOfficeBtn; // NEW: References for filter buttons
 
 // --- IndexedDB Setup (Similar to app.js) ---
-const request = indexedDB.open('TripTrackerDB', 4);
+const request = indexedDB.open('TripTrackerDB', 5);
 
 request.onupgradeneeded = (event) => {
     console.log('TripSheet: DB upgrade needed.'); // Log upgrade

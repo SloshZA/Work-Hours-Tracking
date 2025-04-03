@@ -2,7 +2,7 @@ let db;
 const statusMessagesDiv = document.getElementById('statusMessages');
 
 // --- IndexedDB Setup (Ensure version matches other files) ---
-const request = indexedDB.open('TripTrackerDB', 4);
+const request = indexedDB.open('TripTrackerDB', 5);
 
 request.onupgradeneeded = (event) => {
     // No need to create stores here if they are guaranteed to exist
