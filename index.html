@@ -61,6 +61,7 @@
         <button id="manageCustomersBtn" class="btn">Manage Customers</button>
         <button class="btn" id="manageVehiclesBtn">Manage Vehicles</button>
         <button class="btn" id="importTripBtn">Import Trip from Google Maps</button>
+        <button id="barcodeCaptureBtn" class="btn">Barcode Capture</button>
         <button id="manageDataBtn" class="btn">Data Management</button>
 
     </div>
@@ -216,6 +217,15 @@
                 console.error('Error parsing stored active activity data:', e);
                 localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
             }
+        }
+
+        const barcodeCaptureBtn = document.getElementById('barcodeCaptureBtn');
+        if (barcodeCaptureBtn) {
+            barcodeCaptureBtn.addEventListener('click', () => {
+                window.location.href = 'BarcodeCapture.html';
+            });
+        } else {
+            console.warn('Button with ID "barcodeCaptureBtn" not found');
         }
     });
 

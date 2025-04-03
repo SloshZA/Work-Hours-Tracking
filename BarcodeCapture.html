@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Link to your main styles and the new BarcodeCapture styles -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="BarcodeCapture.css">
+</head>
+<body>
+    <div class="container barcode-container">
+        <h1>Barcode Scanner</h1>
+        <div class="page-controls">
+             <a href="index.html" class="btn back-btn">Back to Main</a>
+             <button id="startScanBtn" class="btn">Start Scan</button>
+             <button id="stopScanBtn" class="btn" style="display: none;">Stop Scan</button>
+        </div>
+
+        <div id="scanner-area">
+            <video id="videoFeed" playsinline></video>
+            <!-- Optional: Canvas for drawing bounding boxes -->
+            <!-- <canvas id="overlayCanvas"></canvas> -->
+        </div>
+
+        <div id="result-area">
+            <h2>Result:</h2>
+            <pre id="barcodeResult">Scanning...</pre>
+        </div>
+
+        <div id="error-area" class="alert" style="display: none;"></div>
+
+    </div>
+
+    <!-- Include the ZXing library from a CDN -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
+    <!-- Link to your new BarcodeCapture script -->
+    <script src="BarcodeCapture.js"></script>
+</body>
+</html> 
