@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof ZXing === 'undefined') {
         showError('Error: ZXing library not loaded. Check the script tag in HTML.');
         startScanBtn.disabled = true;
+        flipCameraBtn.disabled = true; // Disable flip button too
         return;
     }
 
@@ -26,13 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('ZXing code reader initialized');
 
+    // Disable flip button initially
+    flipCameraBtn.disabled = true;
+
     function showError(message) {
         console.error(message);
         resultElement.textContent = 'Error';
         errorElement.textContent = message;
         errorElement.style.display = 'block';
-        // Hide flip button on error too
-        flipCameraBtn.style.display = 'none';
+        flipCameraBtn.disabled = true; // Disable on error
     }
 
     function clearError() {
@@ -132,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultElement.textContent = 'Starting camera...';
         startScanBtn.style.display = 'none';
         stopScanBtn.style.display = 'inline-block';
-        // Keep flip button hidden for now, show later if needed
+        flipCameraBtn.disabled = true; // Disable initially during start
 
         try {
             // Get device list only if not already populated
@@ -198,11 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // --- End ImageCapture setup ---
 
-            // Show flip button only if multiple cameras exist
+            // Enable flip button only if multiple cameras exist
             if (videoInputDevices.length > 1) {
-                flipCameraBtn.style.display = 'inline-block';
+                flipCameraBtn.disabled = false; // Enable the button
             } else {
-                flipCameraBtn.style.display = 'none';
+                flipCameraBtn.disabled = true; // Keep it disabled
             }
 
             resultElement.textContent = 'Scanning... Point camera at a barcode.';
@@ -268,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resultElement.textContent = 'Stopped.';
             startScanBtn.style.display = 'inline-block';
             stopScanBtn.style.display = 'none';
-            flipCameraBtn.style.display = 'none'; // Hide flip button when stopped
+            flipCameraBtn.disabled = true; // Disable flip button when fully stopped
             currentDeviceId = null; // Reset device ID fully when stopped
             videoInputDevices = []; // Clear device list when fully stopped
             clearError(); // Clear any previous errors
@@ -277,9 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- NEW: Flip Camera Logic ---
     function flipCamera() {
-        if (videoInputDevices.length < 2) {
-            console.warn('Flip camera called, but less than 2 cameras available.');
-            return; // Need at least two cameras to flip
+        if (videoInputDevices.length < 2 || flipCameraBtn.disabled) {
+            console.warn('Flip camera called, but not available/enabled.');
+            return;
         }
 
         // Find the index of the current device
