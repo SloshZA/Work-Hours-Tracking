@@ -126,23 +126,27 @@ document.addEventListener('DOMContentLoaded', () => {
         stopScanBtn.style.display = 'inline-block';
 
         try {
-            console.log('Requesting user media with facingMode: environment (exact)');
-            resultElement.textContent = 'Accessing rear camera...';
+            const videoInputDevices = await codeReader.listVideoInputDevices();
+            if (videoInputDevices.length === 0) {
+                throw new Error('No camera devices found.');
+            }
+
+            const backCamera = videoInputDevices.find(device => /back|environment/i.test(device.label));
+            selectedDeviceId = backCamera ? backCamera.deviceId : videoInputDevices[0].deviceId;
+            console.log(`Using video device: ${selectedDeviceId}`);
+            resultElement.textContent = 'Accessing camera...';
 
             stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: { exact: "environment" }
-                }
+                video: { deviceId: { exact: selectedDeviceId } }
             });
-
             videoElement.srcObject = stream;
+            // Wait for metadata to ensure dimensions are available if needed later
             await new Promise((resolve) => { videoElement.onloadedmetadata = resolve; });
-            await videoElement.play();
+            await videoElement.play(); // Ensure video is playing
 
             videoTrack = stream.getVideoTracks()[0];
-            const settings = videoTrack.getSettings();
-            console.log('Actual camera settings:', settings);
 
+            // --- Initialize ImageCapture and check zoom ---
             if ('ImageCapture' in window) {
                 try {
                     imageCapture = new ImageCapture(videoTrack);
@@ -155,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             max: capabilities.zoom.max,
                             step: capabilities.zoom.step
                         };
-                        currentZoom = settings.zoom || zoomCapabilities.min || 1;
+                        currentZoom = videoTrack.getSettings().zoom || zoomCapabilities.min || 1;
                         console.log(`Zoom supported: Min=${zoomCapabilities.min}, Max=${zoomCapabilities.max}, Step=${zoomCapabilities.step}, Current=${currentZoom}`);
                         videoElement.addEventListener('touchstart', handleTouchStart, { passive: false });
                         videoElement.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -172,9 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('ImageCapture API not supported by this browser.');
                 zoomCapabilities = { supported: false };
             }
+            // --- End ImageCapture setup ---
 
+            // --- MODIFICATION START ---
+            // Update status *before* starting the decode loop callback
             resultElement.textContent = 'Scanning... Point camera at a barcode.';
             console.log('decodeFromVideoElement initiated.');
+            // --- MODIFICATION END ---
 
             codeReader.decodeFromVideoElement(videoElement, (result, err) => {
                  if (result) {
@@ -185,44 +193,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 if (err && !(err instanceof ZXing.NotFoundException)) {
+                    // Log non-NotFound errors but don't necessarily stop continuous scan
                     console.error('Decoding error:', err);
                 }
+                 // No longer need to update from 'Accessing...' here
+                 // if (!result && resultElement.textContent.startsWith('Accessing')) {
+                 //     resultElement.textContent = 'Scanning... Point camera at a barcode.';
+                 // }
             }).catch((err) => {
+                // Catch errors specifically from starting the decode process
                 console.error('Error starting decodeFromVideoElement:', err);
                 showError(`Decoder Start Error: ${err.message}.`);
-                stopScan();
+                stopScan(); // Stop if the decoder itself fails to start
             });
 
         } catch (err) {
             console.error('Error in startScan:', err);
-            let message = `Camera/Device Error: ${err.message}.`;
-            if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
-                message = 'Could not find a suitable rear camera. Please ensure one is available and permissions are granted.';
-            } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                message = 'Camera permission denied. Please allow camera access in your browser settings.';
-            }
-            showError(message);
-            stopScan();
+            // Handle errors from getUserMedia, play(), etc.
+            showError(`Camera/Device Error: ${err.message}. Please ensure permissions are granted.`);
+            stopScan(); // Ensure UI resets on error
         }
     }
 
     function stopScan() {
         console.log('Stopping scan.');
-        codeReader.reset();
+        codeReader.reset(); // Reset the decoder
 
+        // Remove touch listeners
         videoElement.removeEventListener('touchstart', handleTouchStart);
         videoElement.removeEventListener('touchmove', handleTouchMove);
         videoElement.removeEventListener('touchend', handleTouchEnd);
 
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach(track => track.stop()); // Stop camera stream tracks
         }
         stream = null;
         videoTrack = null;
         imageCapture = null;
         zoomCapabilities = null;
         initialPinchDistance = 0;
-        currentZoom = 1;
+        currentZoom = 1; // Reset zoom state
 
         videoElement.srcObject = null;
         videoElement.pause();
@@ -231,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultElement.textContent = 'Stopped.';
         startScanBtn.style.display = 'inline-block';
         stopScanBtn.style.display = 'none';
-        clearError();
+        clearError(); // Clear any previous errors
     }
 
     // Event Listeners
