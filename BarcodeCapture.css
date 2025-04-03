@@ -54,16 +54,25 @@
 
 .page-controls {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Adjust if needed, maybe space-around or flex-start */
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+    gap: 10px; /* Add gap between buttons */
 }
 
 .page-controls .btn {
     width: auto; /* Allow buttons to size naturally */
-    margin: 0 5px; /* Add some horizontal margin */
+    /* margin: 0 5px; */ /* Remove fixed margin, use gap */
     padding: 8px 16px;
     font-size: 14px;
+    flex-grow: 1; /* Allow buttons to grow slightly */
+    min-width: 100px; /* Give buttons a minimum width */
+    text-align: center;
+}
+
+.page-controls .back-btn {
+    flex-grow: 0; /* Don't let back button grow too much */
 }
 
 #stopScanBtn {
@@ -73,4 +82,14 @@
 #stopScanBtn:hover {
     background-color: #c23321;
     color: #ffffff;
+}
+
+/* Optional: Style for flip button */
+#flipCameraBtn {
+    background-color: #6c757d; /* Grey */
+    color: #eeeeee;
+}
+#flipCameraBtn:hover {
+     background-color: #5a6268;
+     color: #ffffff;
 } 

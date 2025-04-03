@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoElement = document.getElementById('videoFeed');
     const startScanBtn = document.getElementById('startScanBtn');
     const stopScanBtn = document.getElementById('stopScanBtn');
+    const flipCameraBtn = document.getElementById('flipCameraBtn');
     const resultElement = document.getElementById('barcodeResult');
     const errorElement = document.getElementById('error-area');
 
@@ -13,13 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const codeReader = new ZXing.BrowserMultiFormatReader();
-    let selectedDeviceId; // To store the selected camera device ID
-    let stream; // To hold the camera stream
-    let videoTrack; // Keep track of the video track for constraints
-    let imageCapture; // For zoom control
-    let zoomCapabilities = null; // Store zoom min/max/step
-    let currentZoom = 1; // Start with default zoom
-    let initialPinchDistance = 0; // For pinch-zoom calculation
+    let currentStream; // Renamed from 'stream' for clarity
+    let currentVideoTrack; // Renamed from 'videoTrack'
+    let currentImageCapture; // Renamed from 'imageCapture'
+    let currentZoomCapabilities = null; // Renamed from 'zoomCapabilities'
+    let currentZoom = 1;
+    let initialPinchDistance = 0;
+
+    let videoInputDevices = []; // Store all available video devices
+    let currentDeviceId = null; // Store the ID of the currently used device
 
     console.log('ZXing code reader initialized');
 
@@ -28,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
         resultElement.textContent = 'Error';
         errorElement.textContent = message;
         errorElement.style.display = 'block';
+        // Hide flip button on error too
+        flipCameraBtn.style.display = 'none';
     }
 
     function clearError() {
@@ -57,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleTouchMove(event) {
         if (event.touches.length === 2) {
             event.preventDefault();
-            if (initialPinchDistance <= 0 || !zoomCapabilities || !zoomCapabilities.supported) {
+            if (initialPinchDistance <= 0 || !currentZoomCapabilities || !currentZoomCapabilities.supported) {
                 return; // No starting point or zoom not supported
             }
 
@@ -72,10 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
             let newZoom = currentZoom + zoomChange;
 
             // Clamp the new zoom level within the camera's capabilities
-            newZoom = Math.max(zoomCapabilities.min, Math.min(zoomCapabilities.max, newZoom));
+            newZoom = Math.max(currentZoomCapabilities.min, Math.min(currentZoomCapabilities.max, newZoom));
 
             // Apply the zoom if it has changed significantly (avoid tiny adjustments)
-            if (Math.abs(newZoom - currentZoom) > (zoomCapabilities.step / 2 || 0.01)) {
+            if (Math.abs(newZoom - currentZoom) > (currentZoomCapabilities.step / 2 || 0.01)) {
                  applyZoom(newZoom);
                  // Update currentZoom *after* applying, or based on actual applied value if possible
                  currentZoom = newZoom; // Update our tracked zoom level
@@ -94,18 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function applyZoom(zoomValue) {
-        if (!videoTrack || !zoomCapabilities || !zoomCapabilities.supported) {
+        if (!currentVideoTrack || !currentZoomCapabilities || !currentZoomCapabilities.supported) {
             console.warn('Zoom not supported or video track not available.');
             return;
         }
 
         // Clamp value just in case
-        const clampedZoom = Math.max(zoomCapabilities.min, Math.min(zoomCapabilities.max, zoomValue));
+        const clampedZoom = Math.max(currentZoomCapabilities.min, Math.min(currentZoomCapabilities.max, zoomValue));
 
-        console.log(`Applying zoom: ${clampedZoom} (Min: ${zoomCapabilities.min}, Max: ${zoomCapabilities.max}, Step: ${zoomCapabilities.step})`);
+        console.log(`Applying zoom: ${clampedZoom} (Min: ${currentZoomCapabilities.min}, Max: ${currentZoomCapabilities.max}, Step: ${currentZoomCapabilities.step})`);
 
         try {
-            await videoTrack.applyConstraints({
+            await currentVideoTrack.applyConstraints({
                 advanced: [{ zoom: clampedZoom }]
             });
             currentZoom = clampedZoom; // Update current zoom state
@@ -119,70 +124,89 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Scanning Functions ---
 
-    async function startScan() {
+    async function startScan(deviceId = null) {
+        // Stop any existing scan first (important for flipping)
+        stopScan(true); // Pass true to keep UI in 'scanning' state visually
+
         clearError();
         resultElement.textContent = 'Starting camera...';
         startScanBtn.style.display = 'none';
         stopScanBtn.style.display = 'inline-block';
+        // Keep flip button hidden for now, show later if needed
 
         try {
-            const videoInputDevices = await codeReader.listVideoInputDevices();
+            // Get device list only if not already populated
             if (videoInputDevices.length === 0) {
-                throw new Error('No camera devices found.');
+                videoInputDevices = await codeReader.listVideoInputDevices();
+                if (videoInputDevices.length === 0) {
+                    throw new Error('No camera devices found.');
+                }
+                console.log('Available video devices:', videoInputDevices);
             }
 
-            const backCamera = videoInputDevices.find(device => /back|environment/i.test(device.label));
-            selectedDeviceId = backCamera ? backCamera.deviceId : videoInputDevices[0].deviceId;
-            console.log(`Using video device: ${selectedDeviceId}`);
+            // Determine which device ID to use
+            if (!deviceId) {
+                // Initial scan: prefer back camera
+                const backCamera = videoInputDevices.find(device => /back|environment/i.test(device.label));
+                currentDeviceId = backCamera ? backCamera.deviceId : videoInputDevices[0].deviceId;
+            } else {
+                // Flipping: use the provided deviceId
+                currentDeviceId = deviceId;
+            }
+
+            console.log(`Attempting to use video device: ${currentDeviceId}`);
             resultElement.textContent = 'Accessing camera...';
 
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: { exact: selectedDeviceId } }
+            currentStream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: currentDeviceId } }
             });
-            videoElement.srcObject = stream;
+            videoElement.srcObject = currentStream;
             // Wait for metadata to ensure dimensions are available if needed later
             await new Promise((resolve) => { videoElement.onloadedmetadata = resolve; });
             await videoElement.play(); // Ensure video is playing
 
-            videoTrack = stream.getVideoTracks()[0];
+            currentVideoTrack = currentStream.getVideoTracks()[0];
 
             // --- Initialize ImageCapture and check zoom ---
+            currentZoomCapabilities = { supported: false }; // Reset capabilities
+            currentZoom = 1; // Reset zoom
             if ('ImageCapture' in window) {
                 try {
-                    imageCapture = new ImageCapture(videoTrack);
-                    const capabilities = await imageCapture.getPhotoCapabilities();
+                    currentImageCapture = new ImageCapture(currentVideoTrack);
+                    const capabilities = await currentImageCapture.getPhotoCapabilities();
                     console.log('Camera Capabilities:', capabilities);
                     if (capabilities.zoom && capabilities.zoom.max > capabilities.zoom.min) {
-                        zoomCapabilities = {
+                        currentZoomCapabilities = {
                             supported: true,
                             min: capabilities.zoom.min,
                             max: capabilities.zoom.max,
                             step: capabilities.zoom.step
                         };
-                        currentZoom = videoTrack.getSettings().zoom || zoomCapabilities.min || 1;
-                        console.log(`Zoom supported: Min=${zoomCapabilities.min}, Max=${zoomCapabilities.max}, Step=${zoomCapabilities.step}, Current=${currentZoom}`);
+                        currentZoom = currentVideoTrack.getSettings().zoom || currentZoomCapabilities.min || 1;
+                        console.log(`Zoom supported: Min=${currentZoomCapabilities.min}, Max=${currentZoomCapabilities.max}, Step=${currentZoomCapabilities.step}, Current=${currentZoom}`);
                         videoElement.addEventListener('touchstart', handleTouchStart, { passive: false });
                         videoElement.addEventListener('touchmove', handleTouchMove, { passive: false });
                         videoElement.addEventListener('touchend', handleTouchEnd);
                     } else {
                         console.warn('Zoom is not supported by this camera/browser.');
-                        zoomCapabilities = { supported: false };
                     }
                 } catch (captureError) {
                     console.error('Error initializing ImageCapture:', captureError);
-                    zoomCapabilities = { supported: false };
                 }
             } else {
                 console.warn('ImageCapture API not supported by this browser.');
-                zoomCapabilities = { supported: false };
             }
             // --- End ImageCapture setup ---
 
-            // --- MODIFICATION START ---
-            // Update status *before* starting the decode loop callback
+            // Show flip button only if multiple cameras exist
+            if (videoInputDevices.length > 1) {
+                flipCameraBtn.style.display = 'inline-block';
+            } else {
+                flipCameraBtn.style.display = 'none';
+            }
+
             resultElement.textContent = 'Scanning... Point camera at a barcode.';
             console.log('decodeFromVideoElement initiated.');
-            // --- MODIFICATION END ---
 
             codeReader.decodeFromVideoElement(videoElement, (result, err) => {
                  if (result) {
@@ -215,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function stopScan() {
+    function stopScan(keepScanningState = false) {
         console.log('Stopping scan.');
         codeReader.reset(); // Reset the decoder
 
@@ -224,13 +248,14 @@ document.addEventListener('DOMContentLoaded', () => {
         videoElement.removeEventListener('touchmove', handleTouchMove);
         videoElement.removeEventListener('touchend', handleTouchEnd);
 
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop()); // Stop camera stream tracks
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop()); // Stop camera stream tracks
         }
-        stream = null;
-        videoTrack = null;
-        imageCapture = null;
-        zoomCapabilities = null;
+        // Reset state variables
+        currentStream = null;
+        currentVideoTrack = null;
+        currentImageCapture = null;
+        currentZoomCapabilities = null;
         initialPinchDistance = 0;
         currentZoom = 1; // Reset zoom state
 
@@ -238,15 +263,46 @@ document.addEventListener('DOMContentLoaded', () => {
         videoElement.pause();
         videoElement.removeAttribute('src');
 
-        resultElement.textContent = 'Stopped.';
-        startScanBtn.style.display = 'inline-block';
-        stopScanBtn.style.display = 'none';
-        clearError(); // Clear any previous errors
+        // Only reset UI fully if not just flipping
+        if (!keepScanningState) {
+            resultElement.textContent = 'Stopped.';
+            startScanBtn.style.display = 'inline-block';
+            stopScanBtn.style.display = 'none';
+            flipCameraBtn.style.display = 'none'; // Hide flip button when stopped
+            currentDeviceId = null; // Reset device ID fully when stopped
+            videoInputDevices = []; // Clear device list when fully stopped
+            clearError(); // Clear any previous errors
+        }
+    }
+
+    // --- NEW: Flip Camera Logic ---
+    function flipCamera() {
+        if (videoInputDevices.length < 2) {
+            console.warn('Flip camera called, but less than 2 cameras available.');
+            return; // Need at least two cameras to flip
+        }
+
+        // Find the index of the current device
+        const currentIndex = videoInputDevices.findIndex(device => device.deviceId === currentDeviceId);
+        if (currentIndex === -1) {
+            console.error('Current device not found in the list. Cannot flip.');
+            return; // Should not happen if logic is correct
+        }
+
+        // Calculate the index of the next device, wrapping around
+        const nextIndex = (currentIndex + 1) % videoInputDevices.length;
+        const nextDeviceId = videoInputDevices[nextIndex].deviceId;
+
+        console.log(`Flipping camera from ${currentDeviceId} to ${nextDeviceId}`);
+
+        // Stop the current scan (keeping UI state) and start with the new device
+        startScan(nextDeviceId);
     }
 
     // Event Listeners
-    startScanBtn.addEventListener('click', startScan);
-    stopScanBtn.addEventListener('click', stopScan);
+    startScanBtn.addEventListener('click', () => startScan()); // Initial start
+    stopScanBtn.addEventListener('click', () => stopScan()); // Full stop
+    flipCameraBtn.addEventListener('click', flipCamera); // Add listener for flip
 
     // Initial state
     resultElement.textContent = 'Click "Start Scan" to begin.';
