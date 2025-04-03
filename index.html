@@ -30,6 +30,7 @@
             </div>
             <div class="active-office-actions" style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
                 <button class="btn btn-complete" id="completeTripBtn" style="flex: 1; background-color: #4CAF50;">Complete Trip</button>
+                <button id="editTripBtn" class="btn btn-secondary" style="flex: 1;">Edit Trip</button>
                 <button class="btn btn-danger" id="deleteTripBtn" style="flex: 1;">Delete Task</button>
             </div>
         </div>
@@ -41,8 +42,8 @@
                 <!-- Content will be added by JavaScript -->
             </div>
             <div class="active-office-actions" style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
-                <button class="btn btn-secondary" id="editOfficeWorkBtn" style="flex: 1;">Edit Work</button>
                 <button class="btn btn-complete" id="completeOfficeWorkBtn" style="flex: 1;">Complete Work</button>
+                <button class="btn btn-secondary" id="editOfficeWorkBtn" style="flex: 1;">Edit Work</button>
                 <button class="btn btn-danger" id="deleteOfficeWorkBtn" style="flex: 1;">Delete Task</button>
             </div>
         </div>
@@ -128,21 +129,22 @@
             <form id="officeEntryForm">
                 <div class="form-group">
                     <label for="officeCustomerSelect">Customer:</label>
-                    <select id="officeCustomerSelect" name="customer" required>
+                    <select id="officeCustomerSelect" name="officeCustomer" required>
                         <option value="">-- Select Customer --</option>
                         <!-- Options populated by JS -->
                     </select>
                 </div>
-                <!-- NEW: Purpose Field -->
                 <div class="form-group">
                     <label for="officePurpose">Purpose:</label>
-                    <input type="text" id="officePurpose" name="purpose" required>
+                    <input type="text" id="officePurpose" name="officePurpose" required>
                 </div>
                 <div class="form-group">
                     <label for="officeWorkDetails">Work Details:</label>
-                    <textarea id="officeWorkDetails" name="workDetails" rows="5" required></textarea>
+                    <textarea id="officeWorkDetails" name="officeWorkDetails" rows="4"></textarea>
                 </div>
-                <button type="submit" id="saveOfficeEntryBtn" class="btn">Save Office Entry</button>
+                <div class="modal-actions">
+                    <button type="submit" id="saveOfficeEntryBtn" class="btn btn-primary">Start Work</button>
+                </div>
             </form>
         </div>
     </div>

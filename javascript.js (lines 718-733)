@@ -1,0 +1,22 @@
+// --- Display Active Trip Info (Travel) ---
+function displayActiveTripInfo(trip) {
+    const completeBtn = document.getElementById('completeTripBtn'); // Get the complete button
+    const deleteBtn = document.getElementById('deleteTripBtn');     // Get the delete button
+    const editBtn = document.getElementById('editTripBtn'); // Get the edit button
+
+    if (activeTripInfoDiv && activeTripDetailsDiv && completeBtn && deleteBtn && editBtn) {
+        activeTripDetailsDiv.innerHTML = `
+            <div class="info-block"><strong>Start KM:</strong> ${trip.startKm}</div>
+            <div class="info-block"><strong>Customer:</strong> ${trip.customer}</div>
+            <div class="info-block"><strong>Purpose:</strong> ${trip.purpose}</div>
+        `;
+        // Make sure other active display is hidden
+        if (activeOfficeInfoDiv) activeOfficeInfoDiv.style.display = 'none'; // Hide office info
+        activeTripInfoDiv.style.display = 'block';
+        
+        // No need to set display style here as the buttons are in a container
+        // that inherits visibility from activeTripInfoDiv
+    } else {
+        console.error('Could not find active trip display elements or buttons.');
+    }
+} 
