@@ -28,28 +28,23 @@
             </select>
         </div>
 
-        <div id="activeTripInfo" style="display: none; margin-top: 20px; margin-bottom: 20px;">
+        <div id="activeTripInfo" style="display: none;">
             <h3>Active Trip</h3>
-            <div id="activeTripDetails">
-                <!-- Content will be added by JavaScript -->
-            </div>
-            <div class="active-office-actions" style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
-                <button class="btn btn-complete" id="completeTripBtn" style="flex: 1; background-color: #4CAF50;">Complete Trip</button>
-                <button id="editTripBtn" class="btn btn-secondary" style="flex: 1;">Edit Trip</button>
-                <button class="btn btn-danger" id="deleteTripBtn" style="flex: 1;">Delete Task</button>
+            <div id="activeTripDetails"></div>
+            <div class="active-trip-actions">
+                <button id="completeTripBtn" class="btn">Complete</button>
+                <button id="editTripBtn" class="btn">Edit</button>
+                <button id="deleteTripBtn" class="btn">Delete</button>
             </div>
         </div>
 
-        <!-- NEW: Active Office Work Display -->
-        <div id="activeOfficeInfo" style="display: none; margin-top: 20px; margin-bottom: 20px;">
+        <div id="activeOfficeInfo" style="display: none;">
             <h3>Active Office Work</h3>
-            <div id="activeOfficeDetails">
-                <!-- Content will be added by JavaScript -->
-            </div>
-            <div class="active-office-actions" style="display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
-                <button class="btn btn-complete" id="completeOfficeWorkBtn" style="flex: 1;">Complete Work</button>
-                <button class="btn btn-secondary" id="editOfficeWorkBtn" style="flex: 1;">Edit Work</button>
-                <button class="btn btn-danger" id="deleteOfficeWorkBtn" style="flex: 1;">Delete Task</button>
+            <div id="activeOfficeDetails"></div>
+            <div class="active-office-actions">
+                <button id="completeOfficeWorkBtn" class="btn">Complete</button>
+                <button id="editOfficeWorkBtn" class="btn">Edit</button>
+                <button id="deleteOfficeWorkBtn" class="btn">Delete</button>
             </div>
         </div>
 
@@ -166,8 +161,8 @@
                     <label for="reminderType">Type:</label>
                     <select id="reminderType" required>
                         <option value="">-- Select Type --</option>
-                        <option value="trip">Trip</option>
-                        <option value="office">Office Order</option>
+                        <option value="travel">Travel</option>
+                        <option value="office">Office Work</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -188,5 +183,91 @@
     </div>
 
     <script src="javascript.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ACTIVE_ACTIVITY_KEY = 'activeActivityData';
+        const activeTripInfoDiv = document.getElementById('activeTripInfo');
+        const activeTripDetailsDiv = document.getElementById('activeTripDetails');
+        const activeOfficeInfoDiv = document.getElementById('activeOfficeInfo');
+        const activeOfficeDetailsDiv = document.getElementById('activeOfficeDetails');
+        const startActivityButton = document.getElementById('saveTripBtn');
+
+        // Check for active activity in localStorage
+        const storedActivity = localStorage.getItem(ACTIVE_ACTIVITY_KEY);
+        if (storedActivity) {
+            try {
+                const activeActivityData = JSON.parse(storedActivity);
+                console.log('Restored active activity from localStorage:', activeActivityData);
+
+                if (activeActivityData.type === 'travel') {
+                    displayActiveTripInfo(activeActivityData);
+                } else if (activeActivityData.type === 'office') {
+                    displayActiveOfficeInfo(activeActivityData);
+                } else {
+                    console.error('Unknown activity type:', activeActivityData.type);
+                }
+
+                // Hide the "Start New Activity" button
+                if (startActivityButton) {
+                    startActivityButton.style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Error parsing stored active activity data:', e);
+                localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
+            }
+        }
+    });
+
+    function displayActiveTripInfo(trip) {
+        const activeTripInfoDiv = document.getElementById('activeTripInfo');
+        const activeTripDetailsDiv = document.getElementById('activeTripDetails');
+        const completeTripBtn = document.getElementById('completeTripBtn');
+        const editTripBtn = document.getElementById('editTripBtn');
+        const deleteTripBtn = document.getElementById('deleteTripBtn');
+
+        if (activeTripInfoDiv && activeTripDetailsDiv && completeTripBtn && editTripBtn && deleteTripBtn) {
+            console.log('Displaying active trip:', trip);
+            activeTripDetailsDiv.innerHTML = `
+                <div class="info-block"><strong>Start KM:</strong> ${trip.startKm || 'N/A'}</div>
+                <div class="info-block"><strong>Customer:</strong> ${trip.customer}</div>
+                <div class="info-block"><strong>Purpose:</strong> ${trip.purpose}</div>
+            `;
+            activeTripInfoDiv.style.display = 'block';
+            completeTripBtn.style.display = 'inline-block';
+            editTripBtn.style.display = 'inline-block';
+            deleteTripBtn.style.display = 'inline-block';
+        } else {
+            console.error('Active trip display elements or buttons not found.');
+        }
+    }
+
+    function displayActiveOfficeInfo(officeData) {
+        const activeOfficeInfoDiv = document.getElementById('activeOfficeInfo');
+        const activeOfficeDetailsDiv = document.getElementById('activeOfficeDetails');
+        const completeOfficeWorkBtn = document.getElementById('completeOfficeWorkBtn');
+        const editOfficeWorkBtn = document.getElementById('editOfficeWorkBtn');
+        const deleteOfficeWorkBtn = document.getElementById('deleteOfficeWorkBtn');
+
+        if (activeOfficeInfoDiv && activeOfficeDetailsDiv && completeOfficeWorkBtn && editOfficeWorkBtn && deleteOfficeWorkBtn) {
+            console.log('Displaying active office work:', officeData);
+            activeOfficeDetailsDiv.innerHTML = `
+                <div class="office-info-row">
+                    <div class="info-block office-customer"><strong>Customer:</strong> ${officeData.customer}</div>
+                    <div class="info-block office-purpose"><strong>Purpose:</strong> ${officeData.purpose}</div>
+                </div>
+                <div class="work-details-section">
+                    <strong>Work Details:</strong>
+                    <textarea id="activeWorkDetailsTextarea" class="details-content-editable">${officeData.workDetails || ''}</textarea>
+                </div>
+            `;
+            activeOfficeInfoDiv.style.display = 'block';
+            completeOfficeWorkBtn.style.display = 'inline-block';
+            editOfficeWorkBtn.style.display = 'inline-block';
+            deleteOfficeWorkBtn.style.display = 'inline-block';
+        } else {
+            console.error('Active office work display elements or buttons not found.');
+        }
+    }
+    </script>
 </body>
 </html>

@@ -66,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        console.log('Displaying reminders:', reminders);
+
         if (!reminders || reminders.length === 0) {
             remindersListContainer.innerHTML = '<p>No work reminders found.</p>';
             return;
@@ -133,17 +135,108 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('DB not available to delete reminder');
             return;
         }
+
+        // Convert reminderId to a number
+        const numericReminderId = Number(reminderId);
+        if (isNaN(numericReminderId)) {
+            console.error('Invalid reminder ID:', reminderId);
+            return;
+        }
+
+        console.log(`Attempting to delete reminder with numeric ID: ${numericReminderId}`); // Add log
+
         const transaction = db.transaction(['reminders'], 'readwrite');
         const store = transaction.objectStore('reminders');
-        const request = store.delete(reminderId);
+        const request = store.delete(numericReminderId); // Use the numeric ID
 
         request.onsuccess = () => {
-            console.log('Reminder deleted successfully');
-            loadAndDisplayReminders(); // Refresh the list
+            console.log(`Delete request successful for ID: ${numericReminderId}`);
+            // The list refresh should happen when the transaction completes
         };
 
         request.onerror = (event) => {
-            console.error('Error deleting reminder:', event.target.error);
+            console.error(`Error deleting reminder with ID ${numericReminderId}:`, event.target.error);
+        };
+
+        // Refresh the list only after the transaction completes successfully
+        transaction.oncomplete = () => {
+            console.log(`Transaction completed for deleting ID: ${numericReminderId}. Refreshing list.`);
+            loadAndDisplayReminders(); // Refresh the list here
+        };
+
+        transaction.onerror = (event) => {
+            console.error('Transaction error during delete:', event.target.error);
+            // Optionally, still try to refresh the list or show an error
+            // loadAndDisplayReminders();
+        };
+    }
+
+    // Define the ACTIVE_ACTIVITY_KEY constant
+    const ACTIVE_ACTIVITY_KEY = 'activeActivityData';
+
+    function setReminderAsActive(reminderId) {
+        if (!db) {
+            console.error('DB not available to fetch reminder');
+            return;
+        }
+
+        // Check if there is already an active activity
+        const storedActivity = localStorage.getItem(ACTIVE_ACTIVITY_KEY);
+        if (storedActivity) {
+            alert('An activity (Travel or Office Work) is already in progress. Please complete it first.');
+            return; // Exit the function if there is an active activity
+        }
+
+        const transaction = db.transaction(['reminders'], 'readwrite');
+        const store = transaction.objectStore('reminders');
+        const request = store.get(Number(reminderId));
+
+        request.onsuccess = () => {
+            const reminder = request.result;
+            if (!reminder) {
+                alert('Reminder not found.');
+                return;
+            }
+
+            // Normalize the type to 'travel' or 'office'
+            const normalizedType = reminder.type === 'trip' ? 'travel' : reminder.type;
+
+            // Set the reminder as the active task
+            const activeTask = {
+                type: normalizedType, // Use the normalized type
+                customer: reminder.customer,
+                purpose: reminder.purpose,
+                startTime: new Date().toISOString(),
+                status: 'active',
+                reminderId: reminder.id // Optional: Track the reminder ID
+            };
+
+            activeActivityData = activeTask;
+            try {
+                localStorage.setItem(ACTIVE_ACTIVITY_KEY, JSON.stringify(activeActivityData));
+                console.log('Reminder set as active:', activeTask);
+
+                // Remove the reminder from the reminders list
+                const deleteRequest = store.delete(reminder.id);
+                deleteRequest.onsuccess = () => {
+                    console.log('Reminder removed from the reminders list.');
+                    loadAndDisplayReminders(); // Refresh the reminders list
+                };
+                deleteRequest.onerror = (event) => {
+                    console.error('Error deleting reminder:', event.target.error);
+                };
+
+                // Redirect to index.html to display the active task
+                window.location.href = 'index.html';
+            } catch (e) {
+                console.error('Error setting reminder as active:', e);
+                alert('Failed to set task as active. Please try again.');
+            }
+        };
+
+        request.onerror = (event) => {
+            console.error('Error fetching reminder:', event.target.error);
+            alert('Failed to fetch reminder. Please try again.');
         };
     }
 }); 
