@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Database Setup ---
     let db;
-    const request = indexedDB.open('TripTrackerDB', 4); // Use the correct DB version
+    const request = indexedDB.open('TripTrackerDB', 4);
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
@@ -25,11 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
         db = event.target.result;
         console.log('Database opened successfully for schedule page.');
         if (!db.objectStoreNames.contains('reminders')) {
-             console.error("Error: 'reminders' object store not found.");
-             if (remindersListContainer) {
-                 remindersListContainer.innerHTML = '<p style="color: red;">Error: Reminder data store not found.</p>';
-             }
-             return;
+            console.error("Error: 'reminders' object store not found.");
+            if (remindersListContainer) {
+                remindersListContainer.innerHTML = '<p style="color: red;">Error: Reminder data store not found.</p>';
+            }
+            return;
         }
         // Fetch and display reminders once DB is ready
         loadAndDisplayReminders();
@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
         request.onsuccess = () => {
             const reminders = request.result || [];
             console.log('Fetched reminders from DB:', reminders);
-            // Sort reminders by date (YYYY-MM-DD string comparison works)
             reminders.sort((a, b) => (a.reminderDate || '').localeCompare(b.reminderDate || ''));
             callback(reminders);
         };
@@ -147,6 +146,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error deleting reminder:', event.target.error);
         };
     }
-
-    // Note: loadAndDisplayReminders is called from request.onsuccess
 }); 

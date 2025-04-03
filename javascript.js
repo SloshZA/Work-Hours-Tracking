@@ -62,7 +62,8 @@ const request = indexedDB.open('TripTrackerDB', 4);
 
 request.onupgradeneeded = (event) => {
     db = event.target.result;
-    console.log(`Upgrading database to version ${db.version}`); // Add log
+    console.log(`Upgrading database to version ${db.version}`);
+
     if (!db.objectStoreNames.contains('trips')) {
         console.log('Creating trips store');
         db.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
@@ -71,17 +72,17 @@ request.onupgradeneeded = (event) => {
         console.log('Creating customers store');
         const customerStore = db.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
         if (!customerStore.indexNames.contains('name')) {
-             console.log('Creating name index on customers store');
-             customerStore.createIndex('name', 'name', { unique: false });
+            console.log('Creating name index on customers store');
+            customerStore.createIndex('name', 'name', { unique: false });
         }
     }
     if (!db.objectStoreNames.contains('vehicles')) {
         console.log('Creating vehicles store');
         const vehicleStore = db.createObjectStore('vehicles', { keyPath: 'id', autoIncrement: true });
-         if (!vehicleStore.indexNames.contains('name')) {
-             console.log('Creating name index on vehicles store');
-             vehicleStore.createIndex('name', 'name', { unique: true });
-         }
+        if (!vehicleStore.indexNames.contains('name')) {
+            console.log('Creating name index on vehicles store');
+            vehicleStore.createIndex('name', 'name', { unique: true });
+        }
     } else {
         // If store exists, ensure index exists (needed if upgrading)
         const transaction = event.target.transaction; // Get transaction from event
@@ -158,6 +159,7 @@ request.onsuccess = (event) => {
 
 request.onerror = (event) => {
     console.error('Error opening database:', event.target.error);
+    alert('Error opening database. Please refresh the page.');
 };
 
 function saveTrip(trip, onSuccessCallback) {
