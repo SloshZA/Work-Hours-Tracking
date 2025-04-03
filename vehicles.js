@@ -1,6 +1,6 @@
 let db;
 
-const request = indexedDB.open('TripTrackerDB', 3);
+const request = indexedDB.open('TripTrackerDB', 4);
 
 request.onupgradeneeded = (event) => {
     console.log('Vehicles: DB upgrade needed.');

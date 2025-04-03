@@ -1,0 +1,21 @@
+.customer-table .td-name,
+.customer-table .td-contact-person,
+.customer-table .td-contact-number,
+.customer-table .td-last-visited {
+    text-align: center;
+}
+
+.customer-table .td-contact-person .contact-person-dropdown {
+    text-align: left;
+}
+
+.customer-table .map-link {
+    color: #00cc66;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.customer-table .map-link:hover {
+    text-decoration: underline;
+    color: #00ff88;
+}

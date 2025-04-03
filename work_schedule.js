@@ -92,7 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <strong>Customer:</strong> ${reminder.customer || 'N/A'}<br>
                         <strong>Purpose:</strong> ${reminder.purpose || 'N/A'}
                     </div>
-                    <button class="btn btn-set-active" data-id="${reminder.id}">Set as Active</button>
+                    <div class="reminder-actions">
+                        <button class="btn btn-set-active" data-id="${reminder.id}">Set as Active</button>
+                        <button class="btn btn-delete-reminder" data-id="${reminder.id}">Delete Reminder</button>
+                    </div>
                 </div>
             `;
         });
@@ -107,6 +110,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 setReminderAsActive(reminderId);
             });
         });
+
+        // Add event listeners for the "Delete Reminder" buttons
+        const deleteButtons = document.querySelectorAll('.btn-delete-reminder');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const reminderId = button.getAttribute('data-id');
+                deleteReminder(reminderId);
+            });
+        });
     }
 
     // --- Load and Display ---
@@ -114,6 +126,26 @@ document.addEventListener('DOMContentLoaded', () => {
         getRemindersFromDB((reminders) => {
             displayRemindersList(reminders);
         });
+    }
+
+    // Function to delete a reminder
+    function deleteReminder(reminderId) {
+        if (!db) {
+            console.error('DB not available to delete reminder');
+            return;
+        }
+        const transaction = db.transaction(['reminders'], 'readwrite');
+        const store = transaction.objectStore('reminders');
+        const request = store.delete(reminderId);
+
+        request.onsuccess = () => {
+            console.log('Reminder deleted successfully');
+            loadAndDisplayReminders(); // Refresh the list
+        };
+
+        request.onerror = (event) => {
+            console.error('Error deleting reminder:', event.target.error);
+        };
     }
 
     // Note: loadAndDisplayReminders is called from request.onsuccess

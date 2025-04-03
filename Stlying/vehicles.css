@@ -1,0 +1,23 @@
+.user-vehicle-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.user-vehicle-container select {
+    flex: 1;
+}
+
+#vehicleModal #vehicleName,
+#vehicleModal #licensePlate,
+#vehicleModal #currentKm {
+    margin-bottom: 20px;
+}
+
+#vehicleModal #currentKm {
+    margin-bottom: 10px;
+}
+
+#vehicleModal #saveVehicleBtn {
+    margin-top: 20px;
+}
