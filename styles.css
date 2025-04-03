@@ -497,8 +497,9 @@ input:focus, select:focus, textarea:focus {
     }
     
     .modal-content {
+        width: 70%;
         padding: 20px;
-        margin: 10px auto;
+        margin: 10px;
     }
 }
 
@@ -833,23 +834,29 @@ input:focus, select:focus, textarea:focus {
 #customerModal .contact-pair {
     display: flex;          /* Arrange items horizontally */
     align-items: center;    /* Vertically align items in the middle */
-    margin-bottom: 15px;    /* Increased slightly for better spacing between pairs */
+    margin-bottom: 10px;    /* Reduced margin between pairs */
+    gap: 10px;              /* Add gap between flex items (inputs and button) */
 }
 
-#customerModal .contact-pair .contactPerson {
-    flex: 1;                /* Allow input to grow */
-    margin: 0;              /* Remove default margins */
-    width: auto;            /* Override default width */
-    margin-right: 15px;     /* Add space AFTER the person input */
-}
-
+#customerModal .contact-pair .contactPerson,
 #customerModal .contact-pair .contactNumber {
-    flex: 1;                /* Allow input to grow */
+    flex: 1;                /* Allow inputs to grow and shrink */
+    min-width: 0;           /* Prevent flex items from overflowing */
     margin: 0;              /* Remove default margins */
-    width: auto;            /* Override default width */
-    margin-right: 10px;     /* Add space AFTER the number input (before button) */
+    box-sizing: border-box; 
+    /* Inherit base padding/font-size or set defaults here */
+    padding: 12px; /* Example default from base input style */
+    font-size: 14px; /* Example default */
 }
 
+/* NEW: Reduce height of Contact Number input */
+#customerModal .contact-pair .contactNumber {
+    padding-top: 7px;    /* Reduced top padding */
+    padding-bottom: 7px; /* Reduced bottom padding */
+    font-size: 13px;     /* Optionally reduce font size slightly */
+}
+
+/* No changes needed for the remove button styles */
 #customerModal .contact-pair .btn-remove-contact {
     flex-shrink: 0;         /* Prevent button from shrinking */
     width: auto;            /* Allow button to size based on content */
@@ -862,6 +869,7 @@ input:focus, select:focus, textarea:focus {
     border-radius: 4px;
     cursor: pointer;
     margin: 0;              /* Remove default margins */
+    align-self: center;     /* Ensure button aligns vertically */
 }
 
 #customerModal .contact-pair .btn-remove-contact:hover {
@@ -1045,4 +1053,24 @@ input:focus, select:focus, textarea:focus {
 #deleteTripBtn {
     background-color: #f44336; /* Red */
     color: white;
+}
+
+/* Adjust customer modal layout for mobile */
+@media screen and (max-width: 600px) {
+    #customerModal .contact-pair {
+        flex-direction: column; /* Stack items vertically */
+        align-items: stretch; /* Make inputs full width */
+        gap: 5px;             /* Reduce gap for vertical layout */
+        margin-bottom: 15px;  /* Add slightly more space below stacked pair */
+    }
+    #customerModal .contact-pair .contactPerson,
+    #customerModal .contact-pair .contactNumber {
+        margin-right: 0;      /* Remove right margin in stacked layout */
+        margin-bottom: 5px;   /* Add space below inputs */
+    }
+     #customerModal .contact-pair .btn-remove-contact {
+        align-self: flex-end; /* Keep remove button to the right */
+        margin-top: -35px;    /* Adjust position relative to stacked inputs */
+        margin-right: 5px;    /* Add a small right margin */
+     }
 }
