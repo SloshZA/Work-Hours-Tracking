@@ -49,6 +49,7 @@
                 <h2>Database Operations</h2>
                 <p><strong>Warning:</strong> These actions are irreversible.</p>
                 <div class="action-buttons">
+                    <button id="detailedExportBtn" class="btn btn-export">Full Detailed Export (CSV)</button>
                     <button id="clearDatabaseBtn" class="btn btn-danger">Clear Entire Database</button>
                 </div>
             </section>
@@ -77,6 +78,7 @@
 
     <!-- Include PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="datamanagement.js"></script>
 </body>
 </html> 

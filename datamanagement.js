@@ -293,6 +293,7 @@ function setupEventListeners() {
     document.getElementById('exportTripsBtn')?.addEventListener('click', exportTripsToCSV);
     document.getElementById('exportCustomersBtn')?.addEventListener('click', exportCustomersToCSV);
     document.getElementById('exportVehiclesBtn')?.addEventListener('click', exportVehiclesToCSV);
+    document.getElementById('detailedExportBtn')?.addEventListener('click', detailedExport);
 
     // Import File Inputs (listen for changes)
     document.getElementById('importTripsFile')?.addEventListener('change', (event) => {
@@ -430,4 +431,109 @@ function performDatabaseClear() {
 function clearEntireDatabase() {
     // ... original code with confirm() ...
 }
-*/ 
+*/
+
+async function detailedExport() {
+    try {
+        const wb = XLSX.utils.book_new();
+        
+        // Work and Trip History
+        const trips = await getDataFromStoreAsync('trips');
+        if (trips && trips.length > 0) {
+            const processedTrips = trips.map(trip => {
+                const processedTrip = { ...trip };
+                if (trip.imageData) {
+                    processedTrip.imageData = 'Image data available (see images folder)';
+                }
+                return processedTrip;
+            });
+            const tripsWS = XLSX.utils.json_to_sheet(processedTrips);
+            XLSX.utils.book_append_sheet(wb, tripsWS, "Work and Trip History");
+        }
+
+        // Reports
+        const reports = await getDataFromStoreAsync('reports');
+        if (reports && reports.length > 0) {
+            const processedReports = reports.map(report => {
+                const processedReport = { ...report };
+                if (report.imageData) {
+                    processedReport.imageData = 'Image data available (see images folder)';
+                }
+                return processedReport;
+            });
+            const reportsWS = XLSX.utils.json_to_sheet(processedReports);
+            
+            // Set column widths for reports
+            const wscols = [];
+            const headers = Object.keys(processedReports[0]);
+            headers.forEach(header => {
+                // Set width based on content type
+                if (header === 'details' || header === 'workDetails' || header === 'notes') {
+                    wscols.push({ wch: 50 }); // Wider columns for text content
+                } else if (header === 'imageData') {
+                    wscols.push({ wch: 30 }); // Medium width for image reference
+                } else {
+                    wscols.push({ wch: 20 }); // Default width for other columns
+                }
+            });
+            reportsWS['!cols'] = wscols;
+            
+            XLSX.utils.book_append_sheet(wb, reportsWS, "Reports");
+        }
+
+        // Customers
+        const customers = await getDataFromStoreAsync('customers');
+        if (customers && customers.length > 0) {
+            const processedCustomers = customers.map(customer => {
+                const processedCustomer = { ...customer };
+                if (customer.imageData) {
+                    processedCustomer.imageData = 'Image data available (see images folder)';
+                }
+                return processedCustomer;
+            });
+            const customersWS = XLSX.utils.json_to_sheet(processedCustomers);
+            XLSX.utils.book_append_sheet(wb, customersWS, "Customers");
+        }
+
+        // Vehicles
+        const vehicles = await getDataFromStoreAsync('vehicles');
+        if (vehicles && vehicles.length > 0) {
+            const processedVehicles = vehicles.map(vehicle => {
+                const processedVehicle = { ...vehicle };
+                if (vehicle.imageData) {
+                    processedVehicle.imageData = 'Image data available (see images folder)';
+                }
+                return processedVehicle;
+            });
+            const vehiclesWS = XLSX.utils.json_to_sheet(processedVehicles);
+            XLSX.utils.book_append_sheet(wb, vehiclesWS, "Vehicles");
+        }
+
+        // Generate and download the file
+        const fileName = `SC_Cargo_Tracker_Detailed_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        displayStatusMessage('Detailed export completed successfully!', 'success');
+    } catch (error) {
+        console.error('Error during detailed export:', error);
+        displayStatusMessage(`Error during detailed export: ${error.message}`, 'error');
+    }
+}
+
+function getDataFromStoreAsync(storeName) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('Database not available'));
+            return;
+        }
+        try {
+            const transaction = db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.getAll();
+            
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (event) => reject(event.target.error);
+        } catch (error) {
+            reject(error);
+        }
+    });
+} 
