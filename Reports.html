@@ -115,6 +115,87 @@
             </div>
         </div>
 
+        <!-- NEW: Modal for Manage Individual Report -->
+        <div id="manageIndividualReportModal" class="modal modal-small">
+            <div class="modal-content">
+                <span id="closeManageIndividualReportModalBtn" class="close-btn">&times;</span>
+                <h2>Manage Report</h2>
+                <div class="modal-actions">
+                    <button id="editReportBtn" class="btn">Edit</button>
+                    <button id="deleteReportBtn" class="btn btn-danger">Delete</button>
+                    <button id="cancelManageReportBtn" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Modal for Editing Reports -->
+        <div id="editReportModal" class="modal">
+            <div class="modal-content">
+                <span id="closeEditReportModalBtn" class="close-btn">&times;</span>
+                <h2>Edit Report</h2>
+                <form id="editReportForm">
+                    <input type="hidden" id="editReportId">
+                    <input type="hidden" id="editReportTripId">
+
+                    <!-- Device Type Dropdown -->
+                    <div class="form-group">
+                        <label for="editReportDeviceType">Device Type (Optional):</label>
+                        <select id="editReportDeviceType">
+                            <option value="">-- Select Device --</option>
+                            <option value="PC">PC</option>
+                            <option value="Printer">Printer</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Network">Network Device</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Inline group for Model/Description/Brand and Serial Number -->
+                    <div class="form-group form-group-inline">
+                        <!-- Model Field (Initially Hidden) -->
+                        <div id="editModelFieldContainer" class="form-subgroup hidden">
+                            <label for="editReportModel">Model:</label>
+                            <input type="text" id="editReportModel">
+                        </div>
+
+                        <!-- Description Field (Initially Hidden) -->
+                        <div id="editDescriptionFieldContainer" class="form-subgroup hidden">
+                            <label for="editReportDescription">Description:</label>
+                            <input type="text" id="editReportDescription">
+                        </div>
+
+                        <!-- Brand Field (Initially Hidden) -->
+                        <div id="editBrandFieldContainer" class="form-subgroup hidden">
+                            <label for="editReportBrand">Brand:</label>
+                            <input type="text" id="editReportBrand">
+                        </div>
+
+                        <!-- Serial Number Field -->
+                        <div class="form-subgroup">
+                            <label for="editReportSerialNumber">Serial Number:</label>
+                            <input type="text" id="editReportSerialNumber" required>
+                        </div>
+                    </div>
+
+                    <!-- Fault Report / Details Textarea -->
+                    <div class="form-group">
+                        <label for="editReportDetails">Fault Report / Notes:</label>
+                        <textarea id="editReportDetails" rows="6" required></textarea>
+                    </div>
+
+                    <!-- Photo Upload Field (Allow Multiple) -->
+                    <div class="form-group">
+                        <label for="editReportPhoto">Upload Additional Photos (Optional):</label>
+                        <input type="file" id="editReportPhoto" accept="image/*" multiple>
+                        <!-- Container for existing and new image previews -->
+                        <div id="editPhotoPreviewContainer" class="photo-previews"></div>
+                    </div>
+
+                    <button type="submit" class="btn">Save Changes</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <script src="Reports.js"></script>
