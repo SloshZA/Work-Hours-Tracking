@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/index.6831e097.css">
+    <link rel="stylesheet" href="/index.fa76e9ba.css">
+    <link rel="stylesheet" href="/index.7689b5b8.css">
+    <link rel="stylesheet" href="/index.cbf42de5.css">
+    <link rel="stylesheet" href="/index.212d8c71.css">
+    <link rel="stylesheet" href="/index.69fedf1a.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Trip Tracker</h1>
+
+        <div class="user-vehicle-container">
+            <select id="userSelect">
+                <option value="">-- Select User --</option>
+                <option value="Jarrid">Jarrid</option>
+                <option value="Peter">Peter</option>
+                <option value="Roger">Roger</option>
+            </select>
+            <select id="vehicleSelect">
+                <option value="">-- Select Vehicle --</option>
+            </select>
+        </div>
+
+        <div id="activeTripInfo" style="display: none">
+            <h3>Active Trip</h3>
+            <div id="activeTripDetails"></div>
+            <div class="active-trip-actions">
+                <button id="completeTripBtn" class="btn">Complete</button>
+                <button id="editTripBtn" class="btn">Edit</button>
+                <button id="deleteTripBtn" class="btn">Delete</button>
+            </div>
+        </div>
+
+        <div id="activeOfficeInfo" style="display: none">
+            <h3>Active Office Work</h3>
+            <div id="activeOfficeDetails"></div>
+            <div class="active-office-actions">
+                <button id="completeOfficeWorkBtn" class="btn">Complete</button>
+                <button id="editOfficeWorkBtn" class="btn">Edit</button>
+                <button id="deleteOfficeWorkBtn" class="btn">Delete</button>
+            </div>
+        </div>
+
+        <div id="tripForm">
+            <button class="btn" id="saveTripBtn">Start New Activity</button>
+            <button class="btn" id="workReminderBtn">Work Reminder</button>
+        </div>
+
+        <hr>
+
+        <button class="btn" id="viewTripsBtn">View Work & Trip History</button>
+        <button id="reportsBtn" class="btn">Reports</button>
+        <button id="workScheduleBtn" class="btn">Work Schedule</button>
+        <button id="manageCustomersBtn" class="btn">Manage Customers</button>
+        <button class="btn" id="manageVehiclesBtn">Manage Vehicles</button>
+        <button class="btn" id="importTripBtn">Import Trip from Google Maps</button>
+        <button id="barcodeCaptureBtn" class="btn">Barcode Capture</button>
+        <button id="manageDataBtn" class="btn">Data Management</button>
+
+    </div>
+
+    <div id="startTripModal" class="modal" style="display: none">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalBtn">&times;</span>
+            <h2 style="text-align: center">Start New Trip</h2>
+            <form id="startTripForm">
+                <div class="form-group">
+                    <label for="modalVehicle">Vehicle:</label>
+                    <span id="modalVehicleDisplay"></span>
+                </div>
+                <div class="form-group">
+                    <label for="modalStartKm">Start KM:</label>
+                    <input type="number" id="modalStartKm" name="startKm" required="">
+                </div>
+                <div class="form-group">
+                    <label for="modalCustomer">Customer:</label>
+                    <select id="modalCustomer" name="customer" required="">
+                        <option value="">-- Select Customer --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalPurpose">Purpose:</label>
+                    <input type="text" id="modalPurpose" name="purpose" required="">
+                </div>
+                <button type="submit" id="saveTripFromModalBtn" class="btn">Start Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="endTripModal" class="modal" style="display: none">
+        <div class="modal-content">
+            <span class="close-button" id="closeEndModalBtn">&times;</span>
+            <h2>Complete Trip</h2>
+            <form id="endTripForm">
+                <div class="form-group">
+                    <label for="modalEndKm">End KM:</label>
+                    <input type="number" id="modalEndKm" name="endKm" required="">
+                </div>
+                <div class="form-group">
+                    <label for="modalWorkDetails">Work Details (Optional):</label>
+                    <textarea id="modalWorkDetails" name="workDetails" rows="4"></textarea>
+                </div>
+                <button type="submit" id="saveCompletedTripBtn">Save Completed Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Start Choice Modal -->
+    <div id="startChoiceModal" class="modal modal-small" style="display: none">
+        <div class="modal-content">
+            <span class="close-btn" id="closeStartChoiceModalBtn">&times;</span>
+            <h2>Select Activity Type</h2>
+            <div class="modal-actions">
+                <button id="startTravelBtn" class="btn">Travel</button>
+                <button id="startOfficeBtn" class="btn">Office Work</button>
+                <button id="startChoiceCancelBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Office Entry Modal -->
+    <div id="officeEntryModal" class="modal" style="display: none">
+        <div class="modal-content">
+            <span class="close-btn" id="closeOfficeEntryModalBtn">&times;</span>
+            <h2>Log Office Work</h2>
+            <form id="officeEntryForm">
+                <div class="form-group">
+                    <label for="officeCustomerSelect">Customer:</label>
+                    <select id="officeCustomerSelect" name="officeCustomer" required="">
+                        <option value="">-- Select Customer --</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="officePurpose">Purpose:</label>
+                    <input type="text" id="officePurpose" name="officePurpose" required="">
+                </div>
+                <div class="form-group">
+                    <label for="officeWorkDetails">Work Details:</label>
+                    <textarea id="officeWorkDetails" name="officeWorkDetails" rows="4"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" id="saveOfficeEntryBtn" class="btn btn-primary">Start Work</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Work Reminder Modal -->
+    <div id="workReminderModal" class="modal">
+        <div class="modal-content">
+            <span id="closeReminderModalBtn" class="close">&times;</span>
+            <h2>Add Work Reminder</h2>
+            <form id="workReminderForm">
+                <div class="form-group">
+                    <label for="reminderType">Type:</label>
+                    <select id="reminderType" required="">
+                        <option value="">-- Select Type --</option>
+                        <option value="travel">Travel</option>
+                        <option value="office">Office Work</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reminderCustomerSelect">Customer:</label>
+                    <select id="reminderCustomerSelect" required=""></select>
+                </div>
+                <div class="form-group">
+                    <label for="reminderPurposeInput">Purpose:</label>
+                    <input type="text" id="reminderPurposeInput" required="">
+                </div>
+                <div class="form-group">
+                    <label for="reminderDateInput">Date:</label>
+                    <input type="date" id="reminderDateInput" required="">
+                </div>
+                <button type="submit" class="btn">Save Reminder</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/index.146a6dc7.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', ()=>{
+    const ACTIVE_ACTIVITY_KEY = 'activeActivityData';
+    const activeTripInfoDiv = document.getElementById('activeTripInfo');
+    const activeTripDetailsDiv = document.getElementById('activeTripDetails');
+    const activeOfficeInfoDiv = document.getElementById('activeOfficeInfo');
+    const activeOfficeDetailsDiv = document.getElementById('activeOfficeDetails');
+    const startActivityButton = document.getElementById('saveTripBtn');
+    // Check for active activity in localStorage
+    const storedActivity = localStorage.getItem(ACTIVE_ACTIVITY_KEY);
+    if (storedActivity) try {
+        const activeActivityData = JSON.parse(storedActivity);
+        console.log('Restored active activity from localStorage:', activeActivityData);
+        if (activeActivityData.type === 'travel') displayActiveTripInfo(activeActivityData);
+        else if (activeActivityData.type === 'office') displayActiveOfficeInfo(activeActivityData);
+        else console.error('Unknown activity type:', activeActivityData.type);
+        // Hide the "Start New Activity" button
+        if (startActivityButton) startActivityButton.style.display = 'none';
+    } catch (e) {
+        console.error('Error parsing stored active activity data:', e);
+        localStorage.removeItem(ACTIVE_ACTIVITY_KEY);
+    }
+    const barcodeCaptureBtn = document.getElementById('barcodeCaptureBtn');
+    if (barcodeCaptureBtn) barcodeCaptureBtn.addEventListener('click', ()=>{
+        window.location.href = 'BarcodeCapture.html';
+    });
+    else console.warn('Button with ID "barcodeCaptureBtn" not found');
+});
+function displayActiveTripInfo(trip) {
+    const activeTripInfoDiv = document.getElementById('activeTripInfo');
+    const activeTripDetailsDiv = document.getElementById('activeTripDetails');
+    const completeTripBtn = document.getElementById('completeTripBtn');
+    const editTripBtn = document.getElementById('editTripBtn');
+    const deleteTripBtn = document.getElementById('deleteTripBtn');
+    if (activeTripInfoDiv && activeTripDetailsDiv && completeTripBtn && editTripBtn && deleteTripBtn) {
+        console.log('Displaying active trip:', trip);
+        activeTripDetailsDiv.innerHTML = `
+                <div class="info-block"><strong>Start KM:</strong> ${trip.startKm || 'N/A'}</div>
+                <div class="info-block"><strong>Customer:</strong> ${trip.customer}</div>
+                <div class="info-block"><strong>Purpose:</strong> ${trip.purpose}</div>
+            `;
+        activeTripInfoDiv.style.display = 'block';
+        completeTripBtn.style.display = 'inline-block';
+        editTripBtn.style.display = 'inline-block';
+        deleteTripBtn.style.display = 'inline-block';
+    } else console.error('Active trip display elements or buttons not found.');
+}
+function displayActiveOfficeInfo(officeData) {
+    const activeOfficeInfoDiv = document.getElementById('activeOfficeInfo');
+    const activeOfficeDetailsDiv = document.getElementById('activeOfficeDetails');
+    const completeOfficeWorkBtn = document.getElementById('completeOfficeWorkBtn');
+    const editOfficeWorkBtn = document.getElementById('editOfficeWorkBtn');
+    const deleteOfficeWorkBtn = document.getElementById('deleteOfficeWorkBtn');
+    if (activeOfficeInfoDiv && activeOfficeDetailsDiv && completeOfficeWorkBtn && editOfficeWorkBtn && deleteOfficeWorkBtn) {
+        console.log('Displaying active office work:', officeData);
+        activeOfficeDetailsDiv.innerHTML = `
+                <div class="office-info-row">
+                    <div class="info-block office-customer"><strong>Customer:</strong> ${officeData.customer}</div>
+                    <div class="info-block office-purpose"><strong>Purpose:</strong> ${officeData.purpose}</div>
+                </div>
+                <div class="work-details-section">
+                    <strong>Work Details:</strong>
+                    <textarea id="activeWorkDetailsTextarea" class="details-content-editable">${officeData.workDetails || ''}</textarea>
+                </div>
+            `;
+        activeOfficeInfoDiv.style.display = 'block';
+        completeOfficeWorkBtn.style.display = 'inline-block';
+        editOfficeWorkBtn.style.display = 'inline-block';
+        deleteOfficeWorkBtn.style.display = 'inline-block';
+    } else console.error('Active office work display elements or buttons not found.');
+}
+
+</script>
+<script src="/Time%20Tracker.3ec67a20.js"></script></body>
+</html>

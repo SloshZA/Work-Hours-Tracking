@@ -1,0 +1,27 @@
+.user-vehicle-container {
+  gap: 10px;
+  margin-bottom: 20px;
+  display: flex;
+}
+
+.user-vehicle-container select {
+  flex: 1;
+}
+
+#vehicleModal #vehicleName, #vehicleModal #licensePlate, #vehicleModal #currentKm {
+  margin-bottom: 20px;
+}
+
+#vehicleModal #currentKm {
+  margin-bottom: 10px;
+}
+
+#vehicleModal #saveVehicleBtn {
+  margin-top: 20px;
+}
+
+.vehicles-container .page-controls .add-vehicle-btn {
+  padding: 8px 16px;
+  font-size: .9em;
+}
+/*# sourceMappingURL=index.212d8c71.css.map */

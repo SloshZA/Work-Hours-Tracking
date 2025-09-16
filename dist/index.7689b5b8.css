@@ -1,0 +1,44 @@
+.data-section {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 20px;
+}
+
+.data-section h2 {
+  color: #0f8;
+  border-bottom: 1px solid #555;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+}
+
+.data-section .action-buttons {
+  flex-wrap: wrap;
+  gap: 15px;
+  display: flex;
+}
+
+.btn-import {
+  cursor: pointer;
+  color: #111;
+  background-color: #5bc0de;
+  display: inline-block;
+}
+
+.btn-import:hover {
+  color: #000;
+  background-color: #31b0d5;
+}
+
+.btn-export {
+  color: #111;
+  background-color: #f0ad4e;
+}
+
+.btn-export:hover {
+  color: #000;
+  background-color: #ec971f;
+}
+/*# sourceMappingURL=index.7689b5b8.css.map */

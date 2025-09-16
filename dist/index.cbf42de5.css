@@ -1,0 +1,27 @@
+.filter-controls {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  display: flex;
+}
+
+.filter-button {
+  cursor: pointer;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 15px;
+  font-size: .9em;
+}
+
+.filter-button.active-filter {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #0056b3;
+}
+
+.tripsheet-container th, .tripsheet-container td {
+  text-align: center;
+}
+/*# sourceMappingURL=index.cbf42de5.css.map */
